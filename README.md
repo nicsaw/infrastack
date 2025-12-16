@@ -57,16 +57,16 @@ Enable the OpenSSH server to start automatically at boot:
 sudo systemctl enable ssh --now
 ```
 
-Get Ubuntu IP address (use the first IP address):
+Get WSL IP address (use the first IP address):
 
 ```powershell
 wsl hostname -I
 ```
 
-Forward Windows port 2222 to Ubuntu port 22:
+Forward Windows port 2222 to WSL port 22:
 
 ```powershell
-netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=2222 connectaddress=<UBUNTU_IP> connectport=22
+netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=2222 connectaddress=<WSL_IP> connectport=22
 ```
 
 Allow inbound TCP connections to port 2222 through Windows Defender Firewall:
@@ -83,8 +83,8 @@ ipconfig
 
 Connect from client:
 
-```
-ssh -p 2222 <USERNAME>@<WINDOWS_LAN_IP>
+```zsh
+ssh -p 2222 <WSL_USERNAME>@<WINDOWS_LAN_IP>
 ```
 
 ## [Docker](https://docs.docker.com/engine/install/ubuntu)
@@ -141,3 +141,17 @@ docker exec -it ollama ollama pull <LLM>
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+### Connect from Client
+
+If necessary, remove old SSH host key:
+
+```zsh
+ssh-keygen -R "[<WINDOWS_LAN_IP>]:2222"
+```
+
+Connect from client:
+
+```zsh
+ssh -N -L 3000:localhost:3000 -p 2222 <WSL_USERNAME>@<WINDOWS_LAN_IP>
+```
