@@ -1,5 +1,7 @@
 # pc-to-server
 
+This project repurposes a Windows laptop into a server.
+
 ## WSL
 
 Run Windows PowerShell as Administrator.
