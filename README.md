@@ -28,6 +28,63 @@ Update and upgrade the Ubuntu system:
 sudo apt update && sudo apt upgrade -y
 ```
 
+## [OpenSSH](https://www.openssh.org)
+
+[Install OpenSSH server](https://documentation.ubuntu.com/server/how-to/security/openssh-server/#install-openssh):
+
+```bash
+sudo apt update
+sudo apt install -y openssh-server
+```
+
+Start OpenSSH server:
+
+```bash
+sudo systemctl start ssh
+```
+
+Check OpenSSH service status:
+
+```bash
+sudo systemctl status ssh
+```
+
+Enable the OpenSSH server to start automatically at boot:
+
+```bash
+sudo systemctl enable --now ssh
+```
+
+Get Ubuntu IP address (use the first IP address):
+
+```powershell
+wsl hostname -I
+```
+
+Forward Windows port 2222 to Ubuntu port 22:
+
+```powershell
+netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=2222 connectaddress=<UBUNUTU_IP> connectport=22
+```
+
+Allow inbound TCP connections to port 2222 through Windows Defender Firewall.
+
+```powershell
+New-NetFirewallRule -DisplayName "WSL SSH Port 2222" -Direction Inbound -Protocol TCP -LocalPort 2222 -Action Allow
+```
+
+Get Windows LAN IP address:
+
+```powershell
+ipconfig
+```
+
+Connect from client:
+
+```
+ssh -p 2222 <USERNAME>@<WINDOWS_LAN_IP>
+```
+
 ## [Docker](https://docs.docker.com/engine/install/ubuntu)
 
 ### [Install using the `apt` repository](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository):
