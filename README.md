@@ -10,42 +10,22 @@ Set WSL 2 as the default version for new Linux distributions:
 wsl --set-default-version 2
 ```
 
-Find the latest version of Ubuntu LTS:
+Find the latest Ubuntu LTS release:
 
 ```powershell
 wsl --list --online
 ```
 
-Install the latest Ubuntu LTS release (currently `Ubuntu-22.04`):
+Install the latest Ubuntu LTS release (currently `Ubuntu-24.04`):
 
 ```powershell
-wsl --install Ubuntu-22.04
+wsl --install Ubuntu-24.04
 ```
 
 Update and upgrade the Ubuntu system:
 
 ```bash
 sudo apt update && sudo apt upgrade -y
-```
-
-## [Ollama](https://ollama.com)
-
-[Install Ollama](https://ollama.com/download/linux):
-
-```bash
-curl -fsSL https://ollama.com/install.sh | sh
-```
-
-[Select an LLM](https://ollama.com/library) and install it:
-
-```bash
-ollama pull <LLM>
-```
-
-Run the LLM:
-
-```bash
-ollama run <LLM>
 ```
 
 ## [Docker](https://docs.docker.com/engine/install/ubuntu)
@@ -80,4 +60,25 @@ sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-## Open WebUI
+## [Ollama](https://ollama.com) & [Open WebUI](https://openwebui.com)
+
+Add your user to the `docker` group and apply the `docker` group immediately:
+
+```bash
+sudo usermod -aG docker "$USER"
+newgrp docker
+```
+
+Start services:
+
+```bash
+docker compose up -d
+```
+
+[Select an LLM](https://ollama.com/library) and download it:
+
+```bash
+docker exec -it ollama ollama pull <LLM>
+```
+
+Open [http://localhost:3000](http://localhost:3000).
