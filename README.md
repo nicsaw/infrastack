@@ -1,6 +1,6 @@
 # pc-to-server
 
-This project repurposes a Windows laptop into a server.
+This project repurposes a Windows laptop into a server, with a macOS client used for administration and access.
 
 ## Laptop Settings
 
@@ -265,3 +265,31 @@ Connect from client:
 ```zsh
 ssh -N -L 3000:localhost:3000 <WSL_USERNAME>@<TAILSCALE_IP>
 ```
+
+## [RustDesk](https://rustdesk.com)
+
+### [Windows](https://tailscale.com/kb/1599/rustdesk)
+
+[Install RustDesk for Windows](https://rustdesk.com/docs/en/self-host/client-deployment/#winget):
+
+```powershell
+winget install --id=RustDesk.RustDesk -e
+```
+
+RustDesk -> Settings -> Security -> Enable direct IP access -> Port `21118` -> Apply
+
+Start RustDesk on boot:
+
+```powershell
+Set-Service -Name rustdesk -StartupType Automatic
+```
+
+### macOS
+
+Install RustDesk for macOS:
+
+```zsh
+brew install --cask rustdesk
+```
+
+Go to the **Control Remote Desktop** box and paste the `100.x.x.x` Tailscale IP address for the device you want to connect to.
