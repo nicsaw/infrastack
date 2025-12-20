@@ -48,6 +48,12 @@ schtasks /Create /F `
   /TR "wsl.exe -d Ubuntu-24.04 -u root --exec sleep infinity"
 ```
 
+Run scheduled task manually:
+
+```powershell
+schtasks /Run /TN "Start WSL Ubuntu-24.04"
+```
+
 Enable Task Scheduler logging:
 
 ```powershell
