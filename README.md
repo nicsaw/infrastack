@@ -38,10 +38,40 @@ Set Ubuntu 24.04 as the default Linux distribution:
 wsl --set-default Ubuntu-24.04
 ```
 
+Start WSL at Windows startup:
+
+```powershell
+schtasks /Create /F `
+  /TN "Start WSL Ubuntu-24.04" `
+  /SC ONSTART `
+  /RL HIGHEST `
+  /TR "wsl.exe -d Ubuntu-24.04 -u root --exec sleep infinity"
+```
+
+Enable Task Scheduler logging:
+
+```powershell
+wevtutil sl Microsoft-Windows-TaskScheduler/Operational /e:true
+```
+
 Update and upgrade the Ubuntu system:
 
 ```bash
 sudo apt update && sudo apt upgrade -y
+```
+
+Install Git:
+
+```bash
+sudo apt install -y git
+```
+
+Clone this repository:
+
+```bash
+cd ~
+git clone https://github.com/nicsaw/pc-to-server.git
+cd pc-to-server
 ```
 
 ## Tailscale
@@ -69,6 +99,12 @@ sudo tailscale up
 ### Windows
 
 [Download Tailscale for Windows](https://tailscale.com/download/windows).
+
+Start Tailscale:
+
+```powershell
+tailscale up --unattended=true
+```
 
 ### macOS
 
@@ -198,6 +234,7 @@ newgrp docker
 [Start services](docker-compose.yml):
 
 ```bash
+cd ~/pc-to-server
 docker compose up -d
 ```
 
