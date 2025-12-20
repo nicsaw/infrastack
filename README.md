@@ -2,6 +2,14 @@
 
 This project repurposes a Windows laptop into a server.
 
+## Laptop Settings
+
+Never sleep, hibernate, or shutdown.
+
+Settings -> Power & battery -> Lid, power & sleep button controls -> Closing the lid will make my PC -> **Do Nothing**
+
+MyAsus -> Device Settings -> Power & Performance -> Battery Health Charging -> **Maximum lifespan mode** (limits battery charge to 60%)
+
 ## WSL
 
 Run Windows PowerShell as Administrator.
@@ -24,13 +32,61 @@ Install the latest Ubuntu LTS release (currently `Ubuntu-24.04`):
 wsl --install Ubuntu-24.04
 ```
 
+Set Ubuntu 24.04 as the default Linux distribution:
+
+```powershell
+wsl --set-default Ubuntu-24.04
+```
+
 Update and upgrade the Ubuntu system:
 
 ```bash
 sudo apt update && sudo apt upgrade -y
 ```
 
+## Tailscale
+
+### WSL
+
+[Install Tailscale](https://tailscale.com/download/linux):
+
+```bash
+curl -fsSL https://tailscale.com/install.sh | sh
+```
+
+Enable the Tailscale service to start automatically at boot:
+
+```bash
+sudo systemctl enable --now tailscaled
+```
+
+Start Tailscale:
+
+```bash
+sudo tailscale up
+```
+
+### Windows
+
+[Download Tailscale for Windows](https://tailscale.com/download/windows).
+
+### macOS
+
+[Install Tailscale with Homebrew](https://formulae.brew.sh/cask/tailscale-app):
+
+```zsh
+brew install --cask tailscale-app
+```
+
+Start Tailscale:
+
+```zsh
+tailscale up
+```
+
 ## [OpenSSH](https://www.openssh.org)
+
+### WSL
 
 [Install OpenSSH server](https://documentation.ubuntu.com/server/how-to/security/openssh-server/#install-openssh):
 
@@ -54,37 +110,42 @@ sudo systemctl status ssh
 Enable the OpenSSH server to start automatically at boot:
 
 ```bash
-sudo systemctl enable ssh --now
+sudo systemctl enable --now ssh
 ```
 
-Get WSL IP address (use the first IP address):
+Connect from client to server:
+
+```bash
+ssh <WSL_USERNAME>@<TAILSCALE_IP>
+```
+
+### Windows
 
 ```powershell
-wsl hostname -I
+# Install OpenSSH Server
+Get-WindowsCapability -Online | Where-Object Name -like "OpenSSH.Server*"
+Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+
+# Start on boot, and start now
+Set-Service -Name sshd -StartupType Automatic
+Start-Service sshd
+
+# Allow SSH from Tailscale
+New-NetFirewallRule `
+  -Name "OpenSSH-Server-Tailscale" `
+  -DisplayName "OpenSSH Server (sshd) over Tailscale" `
+  -Enabled True `
+  -Direction Inbound `
+  -Action Allow `
+  -Protocol TCP `
+  -LocalPort 22 `
+  -RemoteAddress 100.64.0.0/10
 ```
 
-Forward Windows port 2222 to WSL port 22:
+Connect from client to server:
 
-```powershell
-netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=2222 connectaddress=<WSL_IP> connectport=22
-```
-
-Allow inbound TCP connections to port 2222 through Windows Defender Firewall:
-
-```powershell
-New-NetFirewallRule -DisplayName "WSL SSH Port 2222" -Direction Inbound -Protocol TCP -LocalPort 2222 -Action Allow
-```
-
-Get Windows LAN IP address:
-
-```powershell
-ipconfig
-```
-
-Connect from client:
-
-```zsh
-ssh -p 2222 <WSL_USERNAME>@<WINDOWS_LAN_IP>
+```bash
+ssh <WINDOWS_USERNAME>@<TAILSCALE_IP>
 ```
 
 ## [Docker](https://docs.docker.com/engine/install/ubuntu)
@@ -119,6 +180,12 @@ sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
+Start Docker on boot:
+
+```bash
+sudo systemctl enable --now docker
+```
+
 ## [Ollama](https://ollama.com) & [Open WebUI](https://openwebui.com)
 
 Add your user to the `docker` group and apply the `docker` group immediately:
@@ -147,11 +214,11 @@ Open [http://localhost:3000](http://localhost:3000).
 If necessary, remove old SSH host key:
 
 ```zsh
-ssh-keygen -R "[<WINDOWS_LAN_IP>]:2222"
+ssh-keygen -R "<TAILSCALE_IP>"
 ```
 
 Connect from client:
 
 ```zsh
-ssh -N -L 3000:localhost:3000 -p 2222 <WSL_USERNAME>@<WINDOWS_LAN_IP>
+ssh -N -L 3000:localhost:3000 <WSL_USERNAME>@<TAILSCALE_IP>
 ```
