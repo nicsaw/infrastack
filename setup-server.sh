@@ -3,9 +3,20 @@ set -e
 
 sudo apt update && sudo apt upgrade -y
 
+# Git
+sudo apt install -y git curl
+cd ~
+git clone https://github.com/nicsaw/pc-to-server.git
+cd pc-to-server
+
+# Tailscale
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo systemctl enable --now tailscaled
+sudo tailscale up
+
 # OpenSSH
 sudo apt install -y openssh-server
-sudo systemctl enable ssh --now
+sudo systemctl enable --now ssh
 
 # Docker
 ## 1. Set up Docker's `apt` repository.
@@ -32,8 +43,9 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 ## Add user to docker group
 sudo usermod -aG docker "$USER"
 newgrp docker
+sudo systemctl enable --now docker
 
 # Ollama & Open WebUI
-curl -fsSL https://raw.githubusercontent.com/nicsaw/pc-to-server/main/docker-compose.yml -o docker-compose.yml
+cd ~/pc-to-server
 docker compose up -d
 docker exec ollama ollama pull llama3.1
