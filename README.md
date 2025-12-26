@@ -41,11 +41,7 @@ wsl --set-default Ubuntu-24.04
 Start WSL at Windows startup:
 
 ```powershell
-schtasks /Create /F `
-  /TN "Start WSL Ubuntu-24.04" `
-  /SC ONSTART `
-  /RL HIGHEST `
-  /TR "wsl.exe -d Ubuntu-24.04 -u root --exec sleep infinity"
+schtasks /Create /F /TN "Start WSL Ubuntu-24.04" /SC ONSTART /RL HIGHEST /TR "wsl.exe -d Ubuntu-24.04 -u root --exec sleep infinity"
 ```
 
 Run scheduled task manually:
@@ -201,15 +197,7 @@ Set-Service -Name sshd -StartupType Automatic
 Start-Service sshd
 
 # Allow SSH from Tailscale
-New-NetFirewallRule `
-  -Name "OpenSSH-Server-Tailscale" `
-  -DisplayName "OpenSSH Server (sshd) over Tailscale" `
-  -Enabled True `
-  -Direction Inbound `
-  -Action Allow `
-  -Protocol TCP `
-  -LocalPort 22 `
-  -RemoteAddress 100.64.0.0/10
+New-NetFirewallRule -Name "OpenSSH-Server-Tailscale" -DisplayName "OpenSSH Server (sshd) over Tailscale" -Enabled True -Direction Inbound -Action Allow -Protocol TCP -LocalPort 22 -RemoteAddress 100.64.0.0/10
 ```
 
 Connect from client to server:
