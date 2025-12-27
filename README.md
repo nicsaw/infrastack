@@ -270,16 +270,6 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Connect from Client
 
-If necessary, remove old SSH host key:
-
-```zsh
-ssh-keygen -R "<TAILSCALE_IP>"
-```
-
-Connect from client:
-
-```zsh
-ssh -N -L 3000:localhost:3000 <WSL_USERNAME>@<TAILSCALE_IP>
-```
+Connect via web browser: `<TAILSCALE_IP>:3000`
 
 # n8n

@@ -5,14 +5,8 @@ sudo apt update && sudo apt upgrade -y
 
 # Git
 sudo apt install -y git curl
-cd ~
-git clone https://github.com/nicsaw/pc-to-server.git
-cd pc-to-server
-
-# Tailscale
-curl -fsSL https://tailscale.com/install.sh | sh
-sudo systemctl enable --now tailscaled
-sudo tailscale up
+git clone https://github.com/nicsaw/pc-to-server.git ~/pc-to-server || echo "⚠️ ~/pc-to-server already exists."
+cd ~/pc-to-server
 
 # OpenSSH
 sudo apt install -y openssh-server
@@ -42,10 +36,15 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 
 ## Add user to docker group
 sudo usermod -aG docker "$USER"
-newgrp docker
+exec sg docker newgrp
 sudo systemctl enable --now docker
 
 # Ollama & Open WebUI
 cd ~/pc-to-server
 docker compose up -d
-docker exec ollama ollama pull llama3.1
+# docker exec ollama ollama pull llama3.1
+
+# Tailscale
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo systemctl enable --now tailscaled
+sudo tailscale up
