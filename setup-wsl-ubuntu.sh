@@ -46,6 +46,6 @@ newgrp docker
 sudo systemctl enable --now docker
 
 # Ollama & Open WebUI
-cd ~/pc-to-server
+cd ~/pc-to-server/services
 docker compose up -d
 docker exec ollama ollama pull llama3.1

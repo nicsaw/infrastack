@@ -1,0 +1,10 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama-volume:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ollama-volume:

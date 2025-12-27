@@ -256,7 +256,7 @@ newgrp docker
 [Start services](docker-compose.yml):
 
 ```bash
-cd ~/pc-to-server
+cd ~/pc-to-server/services
 docker compose up -d
 ```
 
