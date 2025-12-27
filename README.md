@@ -256,7 +256,7 @@ newgrp docker
 [Start services](docker-compose.yml):
 
 ```bash
-cd ~/pc-to-server/services
+cd ~/pc-to-server
 docker compose up -d
 ```
 
@@ -281,3 +281,5 @@ Connect from client:
 ```zsh
 ssh -N -L 3000:localhost:3000 <WSL_USERNAME>@<TAILSCALE_IP>
 ```
+
+# n8n

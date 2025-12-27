@@ -1,3 +1,0 @@
-include:
-  - ./compose-ollama.yaml
-  - ./compose-open-webui.yaml
