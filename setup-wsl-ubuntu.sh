@@ -36,12 +36,11 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 
 ## Add user to docker group
 sudo usermod -aG docker "$USER"
-exec sg docker newgrp
 sudo systemctl enable --now docker
 
 # Ollama & Open WebUI
 cd ~/pc-to-server
-docker compose up -d
+sg docker -c "docker compose up -d"
 # docker exec ollama ollama pull llama3.1
 
 # Tailscale
