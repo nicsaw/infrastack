@@ -272,4 +272,39 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Connect via web browser: `<TAILSCALE_IP>:3000`
 
-# n8n
+## [Cloudflared](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel)
+
+Open [https://dash.cloudflare.com](https://dash.cloudflare.com)
+
+Connect a website to Cloudflare:
+
+1. [`Domains -> Onboard a domain`](https://dash.cloudflare.com/<ACCOUNT_ID>/domains/overview)
+1. `Enter an existing domain -> Continue`
+1. Select the free plan -> `Continue to activation`
+1. Follow the steps to update nameservers
+
+Create a tunnel:
+
+1. [`Zero Trust -> Networks -> Connectors`](https://one.dash.cloudflare.com/<ACCOUNT_ID>/networks/connectors)
+1. [`Cloudflare Tunnels -> Add a tunnel -> Select Cloudflared -> Name your tunnel`](https://one.dash.cloudflare.com/<ACCOUNT_ID>/networks/connectors/cloudflare-tunnels/add/cfd_tunnel)
+1. `Save tunnel`
+1. Select `Docker` as the environment
+1. Copy the token -> `Next`
+1. Add a published application route for n8n
+   1. Set Hostname
+      1. Subdomain: `n8n`
+      1. Domain: `nicholassaw.com`
+   1. Set Service
+      1. Type: `HTTP`
+      1. URL: `n8n:5678`
+1. `Complete setup`
+
+Create configuration file from template:
+
+```bash
+cp .env.example .env
+```
+
+Replace [`CLOUDFLARE_TUNNEL_TOKEN`](.env.example) with the copied token.
+
+## [n8n](https://docs.n8n.io/hosting)

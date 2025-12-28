@@ -1,4 +1,5 @@
 include:
+  - services/cloudflared/compose.yaml
   - services/n8n/compose.yaml
   - services/ollama/compose.yaml
   - services/open-webui/compose.yaml
