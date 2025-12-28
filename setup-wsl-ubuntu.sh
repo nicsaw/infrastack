@@ -1,18 +1,22 @@
 #!/usr/bin/env bash
 set -e
 
+echo "🔵 Updating and upgrading system packages"
 sudo apt update && sudo apt upgrade -y
 
 # Git
+echo "🔵 Git"
 sudo apt install -y git curl
 git clone https://github.com/nicsaw/pc-to-server.git ~/pc-to-server || echo "⚠️ ~/pc-to-server already exists."
 cd ~/pc-to-server
 
 # OpenSSH
+echo "🔵 OpenSSH"
 sudo apt install -y openssh-server
 sudo systemctl enable --now ssh
 
 # Docker
+echo "🔵 Docker"
 ## 1. Set up Docker's `apt` repository.
 ### Add Docker's official GPG key:
 sudo apt install -y ca-certificates curl
@@ -38,12 +42,18 @@ sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 sudo usermod -aG docker "$USER"
 sudo systemctl enable --now docker
 
+# Cloudflared
+echo "🔵 Cloudflared"
+cp .env.example .env
+
 # Ollama & Open WebUI
+echo "🔵 Ollama & Open WebUI"
 cd ~/pc-to-server
 sg docker -c "docker compose up -d"
 # docker exec ollama ollama pull llama3.1
 
 # Tailscale
+echo "🔵 Tailscale"
 curl -fsSL https://tailscale.com/install.sh | sh
 sudo systemctl enable --now tailscaled
 sudo tailscale up
