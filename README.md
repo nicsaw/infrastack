@@ -29,7 +29,7 @@ wsl --list --online
 Install the latest Ubuntu LTS release (currently `Ubuntu-24.04`):
 
 ```powershell
-wsl --install Ubuntu-24.04
+wsl --install -d Ubuntu-24.04
 ```
 
 Set Ubuntu 24.04 as the default Linux distribution:
