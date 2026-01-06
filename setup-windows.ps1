@@ -1,11 +1,12 @@
 Write-Host "🔵 Tailscale" -ForegroundColor Cyan
 # https://winget.run/pkg/tailscale/tailscale
 winget install -e --id Tailscale.Tailscale --accept-source-agreements --accept-package-agreements
+Set-Service -Name Tailscale -StartupType Automatic
 # tailscale up --unattended=true
 
 Write-Host "🔵 RustDesk" -ForegroundColor Cyan
 winget install --id=RustDesk.RustDesk -e --accept-source-agreements --accept-package-agreements
-Set-Service -Name rustdesk -StartupType Automatic
+Set-Service -Name RustDesk -StartupType Automatic
 
 Write-Host "🔵 OpenSSH Server" -ForegroundColor Cyan
 # Install OpenSSH Server
