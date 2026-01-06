@@ -1,6 +1,9 @@
 Write-Host "🔵 Git" -ForegroundColor Cyan
 winget install --id Git.Git -e --source winget --accept-source-agreements --accept-package-agreements
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+
+$machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+$userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+$env:Path = $machinePath + ";" + $userPath
 
 $repoPath = "$HOME\pc-to-server"
 if (Test-Path $repoPath) {
