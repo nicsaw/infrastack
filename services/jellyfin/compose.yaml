@@ -1,0 +1,26 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    restart: unless-stopped
+    ports:
+      - 8096:8096/tcp
+      - 7359:7359/udp
+    environment:
+      - TZ=${GENERIC_TIMEZONE:-Australia/Sydney}
+    volumes:
+      - jellyfin-volume-config:/config
+      - jellyfin-volume-cache:/cache
+      - /mnt/c/Users/saw/jellyfin/media:/media
+    # https://docs.docker.com/compose/how-tos/gpu-support/#example-of-a-compose-file-for-running-a-service-with-access-to-1-gpu-device
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  jellyfin-volume-config:
+  jellyfin-volume-cache:
