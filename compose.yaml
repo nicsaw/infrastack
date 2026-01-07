@@ -1,6 +1,7 @@
 include:
   - services/cloudflared/compose.yaml
   - services/jellyfin/compose.yaml
+  - services/minecraft-server/compose.yaml
   - services/n8n/compose.yaml
   - services/ollama/compose.yaml
   - services/open-webui/compose.yaml

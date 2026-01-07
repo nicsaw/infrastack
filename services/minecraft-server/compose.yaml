@@ -1,0 +1,20 @@
+services:
+  minecraft-server:
+    image: itzg/minecraft-server
+    container_name: minecraft-server
+    restart: unless-stopped
+    ports:
+      - "25565:25565"
+    environment:
+      # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#general-options
+      MEMORY: "10G"
+      # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#server
+      EULA: "TRUE"
+      DIFFICULTY: "hard"
+      # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#curseforge
+      TYPE: "AUTO_CURSEFORGE" # https://docker-minecraft-server.readthedocs.io/en/latest/types-and-platforms/mod-platforms/auto-curseforge
+      CF_API_KEY: ${CF_API_KEY}
+      CF_PAGE_URL: "https://www.curseforge.com/minecraft/modpacks/all-the-mods-10"
+      CF_FORCE_SYNCHRONIZE: "true"
+    volumes:
+      - ./data:/data
