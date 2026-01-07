@@ -61,6 +61,12 @@ sudo apt-get update
 ## Install the NVIDIA Container Toolkit packages
 sudo apt-get install -y nvidia-container-toolkit
 
+## Configure the Docker daemon to enable the NVIDIA Container Runtime
+sudo nvidia-ctk runtime configure --runtime=docker
+
+## Restart Docker to apply the changes
+sudo systemctl restart docker
+
 # Cloudflared
 echo "🔵 Cloudflared"
 cp .env.example .env
