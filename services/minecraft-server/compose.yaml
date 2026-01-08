@@ -10,7 +10,9 @@ services:
       MEMORY: "10G"
       # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#server
       EULA: "TRUE"
+      SERVER_NAME: "Ubuntu - All the Mods 10"
       DIFFICULTY: "hard"
+      ALLOW_FLIGHT: "true"
       # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#curseforge
       TYPE: "AUTO_CURSEFORGE" # https://docker-minecraft-server.readthedocs.io/en/latest/types-and-platforms/mod-platforms/auto-curseforge
       CF_API_KEY: ${CF_API_KEY}
