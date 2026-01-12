@@ -8,6 +8,7 @@ services:
     environment:
       # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#general-options
       MEMORY: "10G"
+      TZ: ${TZ}
       # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#server
       EULA: "TRUE"
       SERVER_NAME: "Ubuntu - All the Mods 10"
