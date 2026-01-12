@@ -308,3 +308,29 @@ cp .env.example .env
 Replace [`CLOUDFLARE_TUNNEL_TOKEN`](.env.example) with the copied token.
 
 ## [n8n](https://docs.n8n.io/hosting)
+
+### [Google Cloud Console](https://console.cloud.google.com)
+
+1. Create New Project
+
+1. APIs & Services -> OAuth consent screen
+
+   1. Audience: `External`
+   1. `Create`
+
+1. APIs & Services -> Credentials
+
+   1. `Create Credentials -> OAuth client ID`
+   1. Application type: `Web application`
+   1. Name: `n8n`
+   1. Authorized redirect URIs: `https://n8n.nicholassaw.com/rest/oauth2-credential/callback`
+   1. `Create`
+   1. Copy `Client ID` and `Client secret` to [n8n Credentials](https://n8n.nicholassaw.com/credentials)
+
+1. APIs & Services -> OAuth consent screen -> Audience -> Test users
+
+   1. `Add users`: Add the email to be used for authentication
+
+1. APIs & Services -> Library
+
+   1. Enable required APIs
