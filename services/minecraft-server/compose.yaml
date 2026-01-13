@@ -9,6 +9,8 @@ services:
       # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#general-options
       MEMORY: "10G"
       TZ: ${TZ}
+      LOG_CONSOLE_FORMAT: "[%d{yyyy-MM-dd HH:mm:ss}] [%t/%level]: %msg%n"
+      LOG_FILE_FORMAT: "[%d{yyyy-MM-dd HH:mm:ss}] [%t/%level]: %msg%n"
       # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#server
       EULA: "TRUE"
       SERVER_NAME: "Ubuntu - All the Mods 10"
