@@ -5,3 +5,4 @@ include:
   - services/n8n/compose.yaml
   - services/ollama/compose.yaml
   - services/open-webui/compose.yaml
+  - services/postgres/compose.yaml

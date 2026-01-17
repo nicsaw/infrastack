@@ -22,6 +22,9 @@ services:
     volumes:
       - n8n-volume:/home/node/.n8n
       - ./local-files:/files
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   n8n-volume:
