@@ -48,6 +48,10 @@ services:
     image: quay.io/superq/smokeping-prober
     container_name: smokeping-prober
     restart: unless-stopped
+    volumes:
+      - ./smokeping-prober/smokeping-prober.yaml:/etc/smokeping-prober/smokeping-prober.yaml
+    command:
+      - "--config.file=/etc/smokeping-prober/smokeping-prober.yaml"
     ports:
       - "9374:9374"
 

@@ -1,0 +1,10 @@
+# https://github.com/SuperQ/smokeping_prober#Configuration
+
+targets:
+  - hosts:
+    - 1.1.1.1
+    - 192.168.1.1
+    interval: 1s
+    network: ip
+    protocol: icmp
+    size: 56
