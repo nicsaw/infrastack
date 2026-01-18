@@ -1,4 +1,19 @@
 services:
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    volumes:
+      - grafana-volume:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -19,7 +34,7 @@ services:
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
-      - /:/rootfs:ro
+      - /:/rootfs:ro,rslave
     command:
       - "--path.procfs=/host/proc"
       - "--path.sysfs=/host/sys"
@@ -30,3 +45,4 @@ services:
 
 volumes:
   prometheus-volume:
+  grafana-volume:
