@@ -78,7 +78,6 @@ mkdir -p ~/pc-to-server/services/n8n/local-files
 # Ollama & Open WebUI
 echo "🔵 Ollama & Open WebUI"
 cd ~/pc-to-server
-sg docker -c "docker compose up -d"
 # docker exec ollama ollama pull llama3.1
 
 # Tailscale
