@@ -44,6 +44,13 @@ services:
     ports:
       - "9100:9100"
 
+  smokeping-prober:
+    image: superq/smokeping-prober
+    container_name: smokeping-prober
+    restart: unless-stopped
+    ports:
+      - "9374:9374"
+
 volumes:
   grafana-volume:
   prometheus-volume:
