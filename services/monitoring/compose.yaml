@@ -34,7 +34,7 @@ services:
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
-      - /:/rootfs:ro,rslave
+      - /:/rootfs:ro
     command:
       - "--path.procfs=/host/proc"
       - "--path.sysfs=/host/sys"
@@ -44,5 +44,5 @@ services:
       - "9100:9100"
 
 volumes:
-  prometheus-volume:
   grafana-volume:
+  prometheus-volume:
