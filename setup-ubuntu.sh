@@ -69,7 +69,7 @@ sudo systemctl restart docker
 
 # Cloudflared
 echo "🔵 Cloudflared"
-cp .env.example .env
+cp -n .env.example .env || echo "⚠️ ~/.env already exists, skipping copy"
 
 # n8n
 echo "🔵 n8n"
