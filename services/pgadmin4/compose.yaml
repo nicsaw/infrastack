@@ -3,15 +3,36 @@ services:
     image: dpage/pgadmin4
     container_name: pgadmin4
     restart: unless-stopped
+    configs:
+      - source: pgadmin-servers
+        target: /pgadmin4/servers.json
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
-    ports:
-      - 5050:80
     volumes:
       - pgadmin4-volume:/var/lib/pgadmin
+    ports:
+      - 5050:80
     depends_on:
       - postgres
+
+configs:
+  pgadmin-servers:
+    content: |
+      {
+        "Servers": {
+          "1": {
+            "Name": "n8n Postgres",
+            "Group": "Servers",
+            "Host": "postgres",
+            "Port": 5432,
+            "MaintenanceDB": "postgres",
+            "Username": "postgres",
+            "Password": "${POSTGRES_PASSWORD}",
+            "SSLMode": "prefer"
+          }
+        }
+      }
 
 volumes:
   pgadmin4-volume:
