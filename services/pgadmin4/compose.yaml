@@ -22,7 +22,7 @@ configs:
       {
         "Servers": {
           "1": {
-            "Name": "n8n Postgres",
+            "Name": "Postgres Server",
             "Group": "Servers",
             "Host": "postgres",
             "Port": 5432,
