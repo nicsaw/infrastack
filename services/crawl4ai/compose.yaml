@@ -1,0 +1,16 @@
+services:
+  crawl4ai:
+    image: unclecode/crawl4ai
+    container_name: crawl4ai
+    restart: unless-stopped
+    environment:
+      - CRAWL4AI_API_TOKEN=${CRAWL4AI_API_TOKEN}
+    volumes:
+      - /dev/shm:/dev/shm
+    ports:
+      - "11235:11235"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11235/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
