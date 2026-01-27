@@ -17,10 +17,9 @@ services:
     ports:
       - "${CLAWDBOT_GATEWAY_PORT:-18789}:18789"
       - "${CLAWDBOT_BRIDGE_PORT:-18790}:18790"
+    entrypoint: ["node", "dist/index.js"]
     command:
       [
-        "node",
-        "dist/index.js",
         "gateway",
         "--bind",
         "${CLAWDBOT_GATEWAY_BIND:-lan}",
