@@ -26,3 +26,8 @@ wsl --set-default-version 2
 schtasks /Create /F /TN 'Start WSL Ubuntu-24.04' /SC ONSTART /RL HIGHEST /TR 'wsl.exe -d Ubuntu-24.04 -u root --exec sleep infinity'
 wsl --install -d Ubuntu-24.04
 wsl --set-default Ubuntu-24.04
+
+$wslconfig_path = "$env:USERPROFILE\.wslconfig"
+if (-not (Select-String -Path $wslconfig_path -Pattern "vmIdleTimeout=-1" -Quiet)) {
+    Add-Content -Path $wslconfig_path -Value "vmIdleTimeout=-1"
+}
