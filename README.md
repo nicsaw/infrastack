@@ -330,3 +330,16 @@ Replace [`CLOUDFLARE_TUNNEL_TOKEN`](.env.example) with the copied token.
 
 1. APIs & Services -> Library
    1. Enable required APIs
+
+# [OpenClaw](https://docs.openclaw.ai)
+
+```bash
+mkdir -p ~/pc-to-server/services/openclaw/config
+mkdir -p ~/pc-to-server/services/openclaw/workspace
+```
+
+[SSH Tunnel](https://docs.molt.bot/gateway/remote#ssh-tunnel-cli-+-tools):
+
+```zsh
+ssh -N -L 18789:127.0.0.1:18789 user@host
+```

@@ -1,0 +1,28 @@
+services:
+  openclaw:
+    build: https://github.com/openclaw/openclaw.git#main
+    image: ${OPENCLAW_IMAGE:-openclaw:local}
+    container_name: OpenClaw
+    restart: unless-stopped
+    init: true
+    environment:
+      TZ: ${TZ}
+      BROWSER: echo
+      HOME: /home/node
+      TERM: xterm-256color
+      OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
+    volumes:
+      - ./config:/home/node/.openclaw
+      - ./workspace:/home/node/.openclaw/workspace
+    ports:
+      - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
+      - "${OPENCLAW_BRIDGE_PORT:-18790}:18790"
+    entrypoint: ["node", "dist/index.js"]
+    command:
+      [
+        "gateway",
+        "--bind",
+        "${OPENCLAW_GATEWAY_BIND:-lan}",
+        "--port",
+        "${OPENCLAW_GATEWAY_PORT:-18789}",
+      ]
