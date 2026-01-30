@@ -1,7 +1,7 @@
 services:
   openclaw:
     image: ghcr.io/openclaw/openclaw:latest
-    container_name: OpenClaw
+    container_name: openclaw
     restart: unless-stopped
     init: true
     environment:
