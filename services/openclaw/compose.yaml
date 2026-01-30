@@ -1,7 +1,6 @@
 services:
   openclaw:
-    build: https://github.com/openclaw/openclaw.git#main
-    image: ${OPENCLAW_IMAGE:-openclaw:local}
+    image: ghcr.io/openclaw/openclaw:latest
     container_name: OpenClaw
     restart: unless-stopped
     init: true
