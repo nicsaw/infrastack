@@ -5,6 +5,7 @@ include:
   - services/minecraft-server/compose.yaml
   - services/monitoring/compose.yaml
   - services/n8n/compose.yaml
+  - services/nocodb/compose.yaml
   - services/ollama/compose.yaml
   - services/open-webui/compose.yaml
   - services/openclaw/compose.yaml

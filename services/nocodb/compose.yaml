@@ -1,0 +1,18 @@
+services:
+  nocodb:
+    image: nocodb/nocodb
+    container_name: nocodb
+    restart: unless-stopped
+    environment:
+      NC_DB: "pg://postgres:5432?u=${POSTGRES_USER}&p=${POSTGRES_PASSWORD}&d=nocodb_metadata"
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - nocodb-volume:/usr/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  nocodb-volume:
