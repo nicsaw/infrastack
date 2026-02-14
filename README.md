@@ -41,7 +41,7 @@ wsl --set-default Ubuntu-24.04
 Start WSL at Windows startup:
 
 ```powershell
-schtasks /Create /F /TN "Start WSL Ubuntu-24.04" /SC ONSTART /RL HIGHEST /TR "wsl.exe -d Ubuntu-24.04 -u root --exec sleep infinity"
+schtasks /Create /F /TN "Start WSL Ubuntu-24.04" /SC MINUTE /MO 1 /RL HIGHEST /TR "wsl.exe -d Ubuntu-24.04 -u root --exec sleep infinity"
 ```
 
 Run scheduled task manually:
