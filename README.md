@@ -325,7 +325,7 @@ Replace [`CLOUDFLARE_TUNNEL_TOKEN`](.env.example) with the copied token.
 mkdir -p ~/pc-to-server/services/openclaw/config ~/pc-to-server/services/openclaw/workspace
 ```
 
-[SSH Tunnel](https://docs.molt.bot/gateway/remote#ssh-tunnel-cli-+-tools):
+[SSH Tunnel](https://docs.openclaw.ai/gateway/remote#ssh-tunnel-cli-+-tools):
 
 ```zsh
 ssh -N -L 18789:127.0.0.1:18789 user@host
