@@ -9,5 +9,6 @@ include:
   - services/ollama/compose.yaml
   - services/open-webui/compose.yaml
   - services/openclaw/compose.yaml
+  - services/opencode/compose.yaml
   - services/pgadmin4/compose.yaml
   - services/postgres/compose.yaml
