@@ -12,4 +12,4 @@ services:
       - ./data:/root/.local/share/opencode
       - ./workspace:/workspace
     working_dir: /workspace
-    command: ["opencode", "web", "--hostname", "0.0.0.0", "--port", "4096"]
+    command: ["web", "--hostname", "0.0.0.0", "--port", "4096"] # default entrypoint = ["opencode"]
