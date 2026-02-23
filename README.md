@@ -161,22 +161,16 @@ sudo apt update
 sudo apt install -y openssh-server
 ```
 
-Start OpenSSH server:
+Start OpenSSH server and enable to start automatically at boot:
 
 ```bash
-sudo systemctl start ssh
+sudo systemctl enable --now ssh
 ```
 
 Check OpenSSH service status:
 
 ```bash
 sudo systemctl status ssh
-```
-
-Enable the OpenSSH server to start automatically at boot:
-
-```bash
-sudo systemctl enable --now ssh
 ```
 
 Connect from client to server:
@@ -244,8 +238,6 @@ Start Docker on boot:
 sudo systemctl enable --now docker
 ```
 
-## [Ollama](https://ollama.com) & [Open WebUI](https://openwebui.com)
-
 Add your user to the `docker` group and apply the `docker` group immediately:
 
 ```bash
@@ -253,24 +245,20 @@ sudo usermod -aG docker "$USER"
 newgrp docker
 ```
 
-[Start services](docker-compose.yml):
+[Start services](compose.yaml):
 
 ```bash
 cd ~/pc-to-server
 docker compose up -d
 ```
 
+## [Ollama](https://ollama.com) & [Open WebUI](https://openwebui.com)
+
 [Select an LLM](https://ollama.com/library) and download it:
 
 ```bash
 docker exec -it ollama ollama pull <LLM>
 ```
-
-Open [http://localhost:3000](http://localhost:3000).
-
-### Connect from Client
-
-Connect via web browser: `<TAILSCALE_IP>:3000`
 
 ## [Cloudflared](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel)
 
@@ -331,7 +319,7 @@ Replace [`CLOUDFLARE_TUNNEL_TOKEN`](.env.example) with the copied token.
 1. APIs & Services -> Library
    1. Enable required APIs
 
-# [OpenClaw](https://docs.openclaw.ai)
+## [OpenClaw](https://docs.openclaw.ai)
 
 ```bash
 mkdir -p ~/pc-to-server/services/openclaw/config ~/pc-to-server/services/openclaw/workspace
