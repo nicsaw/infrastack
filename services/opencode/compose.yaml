@@ -1,0 +1,15 @@
+services:
+  opencode:
+    image: ghcr.io/anomalyco/opencode
+    container_name: opencode
+    restart: unless-stopped
+    ports:
+      - "4096:4096"
+    environment:
+      - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD}
+    volumes:
+      - ./config:/root/.config/opencode
+      - ./data:/root/.local/share/opencode
+      - ./workspace:/workspace
+    working_dir: /workspace
+    command: ["opencode", "web", "--hostname", "0.0.0.0", "--port", "4096"]
