@@ -10,6 +10,7 @@ services:
       # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#general-options
       MEMORY: "10G"
       TZ: ${TZ}
+      GENERATE_LOG4J2_CONFIG: "true" # https://github.com/itzg/docker-minecraft-server/blob/master/docs/configuration/misc-options.md#customize-minecraft-server-logging
       LOG_CONSOLE_FORMAT: "[%d{yyyy-MM-dd HH:mm:ss}] [%t/%level]: %msg%n"
       LOG_FILE_FORMAT: "[%d{yyyy-MM-dd HH:mm:ss}] [%t/%level]: %msg%n"
       # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#server
