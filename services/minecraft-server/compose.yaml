@@ -17,12 +17,15 @@ services:
       SERVER_NAME: "Ubuntu - All the Mods 10"
       DIFFICULTY: "hard"
       ALLOW_FLIGHT: "true"
+      # https://docker-minecraft-server.readthedocs.io/en/latest/configuration/server-properties/#other-server-property-mappings
+      MAX_TICK_TIME: -1
       # https://docker-minecraft-server.readthedocs.io/en/latest/variables/#curseforge
       TYPE: "AUTO_CURSEFORGE" # https://docker-minecraft-server.readthedocs.io/en/latest/types-and-platforms/mod-platforms/auto-curseforge
       CF_API_KEY: ${CF_API_KEY}
-      CF_PAGE_URL: "https://www.curseforge.com/minecraft/modpacks/all-the-mods-10"
       CF_FORCE_SYNCHRONIZE: "true"
-      # https://docker-minecraft-server.readthedocs.io/en/latest/configuration/server-properties/#other-server-property-mappings
-      MAX_TICK_TIME: -1
+      CF_PAGE_URL: "https://www.curseforge.com/minecraft/modpacks/all-the-mods-10"
+      # https://docker-minecraft-server.readthedocs.io/en/latest/mods-and-plugins/curseforge-files
+      CURSEFORGE_FILES: |
+        simple-voice-chat
     volumes:
       - ./data:/data
