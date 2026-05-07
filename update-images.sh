@@ -8,4 +8,4 @@ for svc in $(docker compose ps --services --filter status=running); do
 done
 
 docker compose up -d
-docker image prune -f
+docker system prune -f
