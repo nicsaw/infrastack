@@ -4,9 +4,9 @@ services:
     container_name: searxng
     restart: unless-stopped
     ports:
-      - 8082:8080
+      - 5342:8080
     environment:
-      - SEARXNG_BASE_URL=${SEARXNG_BASE_URL:-http://localhost:8082/}
+      - SEARXNG_BASE_URL=${SEARXNG_BASE_URL:-http://localhost:5342/}
       - UWSGI_WORKERS=${SEARXNG_UWSGI_WORKERS:-4}
       - UWSGI_THREADS=${SEARXNG_UWSGI_THREADS:-4}
     volumes:
