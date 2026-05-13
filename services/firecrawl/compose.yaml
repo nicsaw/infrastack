@@ -1,0 +1,109 @@
+services:
+  firecrawl-api:
+    image: ghcr.io/firecrawl/firecrawl
+    container_name: firecrawl-api
+    restart: unless-stopped
+    environment:
+      - REDIS_URL=redis://firecrawl-redis:6379
+      - REDIS_RATE_LIMIT_URL=redis://firecrawl-redis:6379
+      - PLAYWRIGHT_MICROSERVICE_URL=http://firecrawl-playwright:3000/scrape
+      - POSTGRES_USER=${FIRECRAWL_POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${FIRECRAWL_POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${FIRECRAWL_POSTGRES_DB:-postgres}
+      - POSTGRES_HOST=firecrawl-postgres
+      - POSTGRES_PORT=5432
+      - USE_DB_AUTHENTICATION=false
+      - NUM_WORKERS_PER_QUEUE=${FIRECRAWL_NUM_WORKERS_PER_QUEUE:-8}
+      - CRAWL_CONCURRENT_REQUESTS=${FIRECRAWL_CRAWL_CONCURRENT_REQUESTS:-10}
+      - MAX_CONCURRENT_JOBS=${FIRECRAWL_MAX_CONCURRENT_JOBS:-5}
+      - BROWSER_POOL_SIZE=${FIRECRAWL_BROWSER_POOL_SIZE:-5}
+      - HOST=0.0.0.0
+      - PORT=3002
+      - NUQ_RABBITMQ_URL=amqp://firecrawl-rabbitmq:5672
+      - ENV=local
+    depends_on:
+      firecrawl-playwright:
+        condition: service_started
+      firecrawl-rabbitmq:
+        condition: service_healthy
+      firecrawl-postgres:
+        condition: service_started
+      firecrawl-redis:
+        condition: service_started
+    ports:
+      - 3002:3002
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    command: node dist/src/harness.js --start-docker
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  firecrawl-playwright:
+    image: ghcr.io/firecrawl/playwright-service
+    container_name: firecrawl-playwright
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+      - PROXY_SERVER=${FIRECRAWL_PROXY_SERVER:-}
+      - PROXY_USERNAME=${FIRECRAWL_PROXY_USERNAME:-}
+      - PROXY_PASSWORD=${FIRECRAWL_PROXY_PASSWORD:-}
+      - BLOCK_MEDIA=${FIRECRAWL_BLOCK_MEDIA:-}
+      - MAX_CONCURRENT_PAGES=${FIRECRAWL_CRAWL_CONCURRENT_REQUESTS:-10}
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  firecrawl-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: firecrawl-rabbitmq
+    restart: unless-stopped
+    command: rabbitmq-server
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+  firecrawl-postgres:
+    image: ghcr.io/firecrawl/nuq-postgres
+    container_name: firecrawl-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${FIRECRAWL_POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${FIRECRAWL_POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${FIRECRAWL_POSTGRES_DB:-postgres}
+    volumes:
+      # PGDATA path is for PG <=17. PG 18+ moved it to /var/lib/postgresql
+      - firecrawl-postgres-data:/var/lib/postgresql/data
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  firecrawl-redis:
+    image: redis:alpine
+    container_name: firecrawl-redis
+    restart: unless-stopped
+    command: redis-server --bind 0.0.0.0
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+
+volumes:
+  firecrawl-postgres-data:
