@@ -4,13 +4,14 @@ services:
     container_name: n8n
     restart: unless-stopped
     environment:
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
       - N8N_HOST=${SUBDOMAIN}.${DOMAIN_NAME}
       - N8N_PORT=5678
       - N8N_PROTOCOL=https
-      - N8N_RUNNERS_ENABLED=true
-      - NODE_ENV=production
       - WEBHOOK_URL=https://${SUBDOMAIN}.${DOMAIN_NAME}/
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RESTRICT_FILE_ACCESS_TO=/files
+      - NODE_ENV=production
+      - N8N_RUNNERS_ENABLED=true
       - GENERIC_TIMEZONE=${TZ}
       - TZ=${TZ}
       - DB_TYPE=postgresdb
