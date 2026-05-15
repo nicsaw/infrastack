@@ -1,0 +1,10 @@
+services:
+  seek-scraper:
+    build: ../../external/n8n/job-hunt
+    container_name: seek-scraper
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "1"

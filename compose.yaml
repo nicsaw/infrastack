@@ -15,3 +15,4 @@ include:
   - services/pgadmin4/compose.yaml
   - services/postgres/compose.yaml
   - services/searxng/compose.yaml
+  - services/seek-scraper/compose.yaml
