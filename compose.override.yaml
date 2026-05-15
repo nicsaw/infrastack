@@ -1,0 +1,9 @@
+x-disabled: &disabled { profiles: ["disabled"] }
+
+services:
+  # Example: Disable the firecrawl stack (uncomment below)
+  # firecrawl-api: *disabled
+  # firecrawl-playwright: *disabled
+  # firecrawl-rabbitmq: *disabled
+  # firecrawl-postgres: *disabled
+  # firecrawl-redis: *disabled
