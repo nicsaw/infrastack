@@ -76,6 +76,53 @@ git clone https://github.com/nicsaw/pc-to-server.git
 cd pc-to-server
 ```
 
+## Private Submodules
+
+The [`external/n8n`](.gitmodules) submodule points at a private repository, so the server needs a [GitHub deploy key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys) to clone it.
+
+Generate a deploy key on WSL:
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/n8n_deploy -N "" -C "wsl-deploy@n8n"
+cat ~/.ssh/n8n_deploy.pub
+```
+
+Add the public key to the private repository:
+
+1. `https://github.com/nicsaw/n8n/settings/keys`
+1. `Add deploy key`
+1. Paste the contents of `~/.ssh/n8n_deploy.pub`
+1. Leave `Allow write access` unchecked
+1. `Add key`
+
+Tell SSH to use the deploy key for `github.com`:
+
+```bash
+cat >> ~/.ssh/config <<'EOF'
+
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile ~/.ssh/n8n_deploy
+  IdentitiesOnly yes
+EOF
+chmod 600 ~/.ssh/config
+```
+
+Test authentication:
+
+```bash
+ssh -T git@github.com
+```
+
+Expected: `Hi nicsaw/n8n! You've successfully authenticated, but GitHub does not provide shell access.`
+
+Initialise the submodule:
+
+```bash
+./update-submodules.sh
+```
+
 ## [Tailscale](https://tailscale.com)
 
 ### WSL
