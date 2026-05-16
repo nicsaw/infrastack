@@ -1,7 +1,7 @@
 services:
-  seek-scraper:
-    build: ../../external/n8n/job-hunt
-    container_name: seek-scraper
+  job-hunt:
+    build: ../../external/job-hunt
+    container_name: job-hunt
     restart: unless-stopped
     logging:
       driver: json-file
