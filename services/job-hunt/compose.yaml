@@ -1,6 +1,6 @@
 services:
   job-hunt:
-    build: ../../external/job-hunt
+    image: ghcr.io/nicsaw/job-hunt:latest
     container_name: job-hunt
     restart: unless-stopped
     logging:
