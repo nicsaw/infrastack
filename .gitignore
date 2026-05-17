@@ -1,6 +1,3 @@
-# Local checkouts (formerly the job-hunt submodule)
-/external/
-
 # Logs
 logs
 *.log
