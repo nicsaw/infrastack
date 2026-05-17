@@ -7,6 +7,6 @@ cd "$(dirname "$(realpath "$0")")"
 git pull
 
 git submodule sync --recursive
-git submodule update --init --recursive
+git submodule update --init --recursive --remote
 
 docker compose up -d --build job-hunt
