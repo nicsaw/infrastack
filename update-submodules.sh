@@ -4,8 +4,9 @@ set -e
 
 cd "$(dirname "$(realpath "$0")")"
 
-git submodule sync --recursive
+git pull
 
+git submodule sync --recursive
 git submodule update --init --recursive
 
 docker compose up -d --build job-hunt
