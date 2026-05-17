@@ -117,12 +117,6 @@ ssh -T git@github.com
 
 Expected: `Hi nicsaw/n8n! You've successfully authenticated, but GitHub does not provide shell access.`
 
-Initialise the submodule:
-
-```bash
-./update-submodules.sh
-```
-
 ## [Tailscale](https://tailscale.com)
 
 ### WSL

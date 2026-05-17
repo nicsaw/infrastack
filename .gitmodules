@@ -1,3 +1,0 @@
-[submodule "external/job-hunt"]
-	path = external/job-hunt
-	url = git@github.com:nicsaw/job-hunt.git
