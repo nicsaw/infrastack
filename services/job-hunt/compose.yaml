@@ -3,6 +3,11 @@ services:
     image: ghcr.io/nicsaw/job-hunt:latest
     container_name: job-hunt
     restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/career
+    depends_on:
+      postgres:
+        condition: service_healthy
     logging:
       driver: json-file
       options:
