@@ -143,3 +143,4 @@ compose.override.yaml
 
 # Services
 services/minecraft-server/data/
+services/hermes-agent/data/
