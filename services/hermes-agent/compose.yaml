@@ -14,6 +14,7 @@ services:
       - API_SERVER_KEY=${HERMES_API_SERVER_KEY}
       - HERMES_DASHBOARD=1
       - TELEGRAM_BOT_TOKEN=${HERMES_TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_ALLOWED_USERS=${HERMES_TELEGRAM_ALLOWED_USERS}
     deploy:
       resources:
         limits:
