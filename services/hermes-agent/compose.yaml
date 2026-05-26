@@ -15,6 +15,7 @@ services:
       - HERMES_DASHBOARD=1
       - TELEGRAM_BOT_TOKEN=${HERMES_TELEGRAM_BOT_TOKEN}
       - TELEGRAM_ALLOWED_USERS=${HERMES_TELEGRAM_ALLOWED_USERS}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
     deploy:
       resources:
         limits:
