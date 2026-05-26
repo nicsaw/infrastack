@@ -9,7 +9,7 @@ services:
       - "9119:9119" # dashboard
     volumes:
       - ./data:/opt/data
-    environment:
+    environment: # https://hermes-agent.nousresearch.com/docs/reference/environment-variables
       - API_SERVER_ENABLED=true
       - API_SERVER_KEY=${HERMES_API_SERVER_KEY}
       - HERMES_DASHBOARD=1
