@@ -13,7 +13,7 @@ services:
       - API_SERVER_ENABLED=true
       - API_SERVER_KEY=${HERMES_API_SERVER_KEY}
       - HERMES_DASHBOARD=1
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_BOT_TOKEN=${HERMES_TELEGRAM_BOT_TOKEN}
     deploy:
       resources:
         limits:
