@@ -1,7 +1,7 @@
 services:
-  job-hunt:
-    image: ghcr.io/nicsaw/job-hunt:latest
-    container_name: job-hunt
+  spearhead:
+    image: ghcr.io/nicsaw/spearhead:latest
+    container_name: spearhead
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/career
