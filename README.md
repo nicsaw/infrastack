@@ -163,6 +163,22 @@ Start Tailscale:
 tailscale up
 ```
 
+### [Tailscale SSH](https://tailscale.com/docs/features/tailscale-ssh)
+
+Enable Tailscale SSH on the WSL server:
+
+```bash
+sudo tailscale up --ssh
+```
+
+Connect from the macOS client:
+
+```zsh
+tailscale ssh <WSL_USERNAME>@<TAILSCALE_HOSTNAME>
+```
+
+If the [tailnet policy](https://login.tailscale.com/admin/acls/file) sets `"action": "check"` on the `ssh` rule, the first connection per check period opens a browser for re-authentication. Plain `ssh <WSL_USERNAME>@<TAILSCALE_HOSTNAME>` succeeds within that window but hangs at key exchange after it expires; run `tailscale ssh` again to refresh.
+
 ## [RustDesk](https://rustdesk.com)
 
 ### [Windows](https://tailscale.com/kb/1599/rustdesk)
