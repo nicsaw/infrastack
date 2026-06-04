@@ -1,8 +1,9 @@
 services:
-  spearhead:
+  spearhead-migrate:
     image: ghcr.io/nicsaw/spearhead:latest
-    container_name: spearhead
-    restart: unless-stopped
+    container_name: spearhead-migrate
+    restart: "no"
+    command: alembic upgrade head
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/career
     depends_on:
@@ -13,3 +14,53 @@ services:
       options:
         max-size: "1m"
         max-file: "1"
+
+  spearhead:
+    image: ghcr.io/nicsaw/spearhead:latest
+    container_name: spearhead
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/career
+      LLM_PROVIDER: groq,ollama
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: gpt-oss:20b
+      SEARXNG_URL: http://searxng:8080
+      JINA_API_KEY: ${JINA_API_KEY:-}
+      CORS_ORIGINS: '["https://spearhead.nicholassaw.com"]'
+      SCHEDULER_ENABLED: "true"
+      PROFILE_PATH: /app/profile.md
+      PROFILE_YAML_PATH: /app/profile.yaml
+      COACH_REPORT_PATH: /app/data/coach_report.json
+      TZ: ${TZ}
+    volumes:
+      - ./profile.md:/app/profile.md:ro
+      - ./profile.yaml:/app/profile.yaml:ro
+      - spearhead-data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+      spearhead-migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()",
+        ]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+volumes:
+  spearhead-data:
