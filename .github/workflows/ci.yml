@@ -17,7 +17,7 @@ permissions:
 jobs:
   compose:
     name: Docker Compose config
-    runs-on: [self-hosted, pc-to-server]
+    runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
@@ -29,8 +29,3 @@ jobs:
 
       - name: Validate Compose configuration
         run: docker compose --env-file .env.example -f compose.yaml config --quiet
-
-      - name: Validate runner Compose configuration
-        run: docker compose -f actions-runner/pc-to-server/compose.yaml config --quiet
-        env:
-          RUNNER_TOKEN: dummy
