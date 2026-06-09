@@ -2,6 +2,7 @@ include:
   - services/cloudflared/compose.yaml
   - services/crawl4ai/compose.yaml
   - services/firecrawl/compose.yaml
+  - services/github-runner/compose.yaml
   - services/hermes-agent/compose.yaml
   - services/jellyfin/compose.yaml
   - services/metube/compose.yaml

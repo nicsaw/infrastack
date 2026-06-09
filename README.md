@@ -376,6 +376,32 @@ Replace [`CLOUDFLARE_TUNNEL_TOKEN`](.env.example) with the copied token.
 1. APIs & Services -> Library
    1. Enable required APIs
 
+## GitHub Actions Runner
+
+A persistent self-hosted runner using [`myoung34/github-runner`](https://github.com/myoung34/docker-github-actions-runner). Caches for `npm`, `cargo`, and the generic `~/.cache` directory persist across jobs via named volumes; the host Docker socket is mounted so workflows can build images with native BuildKit.
+
+> Security note: socket-mounting means a job can root the host. Only register this runner against repositories where you trust every workflow file. Do not enable it for public repositories with fork PR workflows.
+
+Create a [classic Personal Access Token](https://github.com/settings/tokens) with `repo` scope and copy it.
+
+Set [`GH_RUNNER_PAT`, `GH_RUNNER_REPO_URL`, `GH_RUNNER_NAME`](.env.example) in `.env`.
+
+Start the runner:
+
+```bash
+docker compose up -d github-runner
+```
+
+Verify it appears under `Settings -> Actions -> Runners` on the target repository.
+
+Use it in a workflow:
+
+```yaml
+jobs:
+  build:
+    runs-on: [self-hosted, linux, homelab]
+```
+
 ## [OpenClaw](https://docs.openclaw.ai)
 
 ```bash
