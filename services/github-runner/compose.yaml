@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       ACCESS_TOKEN: ${GH_RUNNER_PAT}
-      REPO_URL: ${GH_RUNNER_REPO_URL}
+      REPO_URL: ${GH_RUNNER_REPO_URL:-https://github.com/nicsaw/spearhead}
       RUNNER_NAME: ${GH_RUNNER_NAME:-homelab-runner}
       RUNNER_SCOPE: repo
       LABELS: self-hosted,linux,homelab
