@@ -384,7 +384,7 @@ A persistent self-hosted runner using [`myoung34/github-runner`](https://github.
 
 Create a [classic Personal Access Token](https://github.com/settings/tokens) with `repo` scope and copy it.
 
-Set [`GH_RUNNER_PAT`, `GH_RUNNER_REPO_URL`, `GH_RUNNER_NAME`](.env.example) in `.env`.
+Set [`GH_RUNNER_PAT`, `GH_RUNNER_REPO_URL`](.env.example) in `.env`.
 
 Start the runner:
 
