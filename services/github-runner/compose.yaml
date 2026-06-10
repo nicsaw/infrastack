@@ -10,12 +10,15 @@ services:
       RUNNER_SCOPE: repo
       LABELS: self-hosted,linux,homelab
       DISABLE_AUTO_UPDATE: "true"
+      RUNNER_TOOL_CACHE: /opt/hostedtoolcache
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - github-runner-work:/_work
       - github-runner-cache:/home/runner/.cache
       - github-runner-npm:/home/runner/.npm
       - github-runner-cargo:/home/runner/.cargo
+      - github-runner-pnpm-store:/home/runner/.local/share/pnpm/store
+      - github-runner-toolcache:/opt/hostedtoolcache
     logging:
       driver: json-file
       options:
@@ -27,3 +30,5 @@ volumes:
   github-runner-cache:
   github-runner-npm:
   github-runner-cargo:
+  github-runner-pnpm-store:
+  github-runner-toolcache:
