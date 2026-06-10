@@ -25,6 +25,32 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  github-runner-2:
+    image: myoung34/github-runner
+    container_name: github-runner-2
+    restart: unless-stopped
+    environment:
+      ACCESS_TOKEN: ${GH_RUNNER_PAT}
+      REPO_URL: ${GH_RUNNER_REPO_URL:-https://github.com/nicsaw/spearhead}
+      RUNNER_NAME: homelab-runner-2
+      RUNNER_SCOPE: repo
+      LABELS: self-hosted,linux,homelab
+      DISABLE_AUTO_UPDATE: "true"
+      RUNNER_TOOL_CACHE: /opt/hostedtoolcache
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - github-runner-2-work:/_work
+      - github-runner-2-cache:/home/runner/.cache
+      - github-runner-2-npm:/home/runner/.npm
+      - github-runner-2-cargo:/home/runner/.cargo
+      - github-runner-2-pnpm-store:/home/runner/.local/share/pnpm/store
+      - github-runner-toolcache:/opt/hostedtoolcache
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
 volumes:
   github-runner-work:
   github-runner-cache:
@@ -32,3 +58,8 @@ volumes:
   github-runner-cargo:
   github-runner-pnpm-store:
   github-runner-toolcache:
+  github-runner-2-work:
+  github-runner-2-cache:
+  github-runner-2-npm:
+  github-runner-2-cargo:
+  github-runner-2-pnpm-store:
