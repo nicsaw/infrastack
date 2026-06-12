@@ -14,6 +14,11 @@ x-runner: &runner
       max-size: "10m"
       max-file: "3"
 
+# Cache volumes are SHARED across runners (pnpm/npm/cargo/.cache are content-
+# addressed or rely on their own lockfiles for concurrent access). A PR scheduled
+# on runner 2 hits the cache that runner 1 just warmed. Only `_work` and
+# `toolcache` semantics differ: `_work` stays per-runner so concurrent jobs do
+# not clobber each other's checkouts; `toolcache` was already shared.
 services:
   github-runner:
     <<: *runner
@@ -39,21 +44,17 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - github-runner-2-work:/_work
-      - github-runner-2-cache:/home/runner/.cache
-      - github-runner-2-npm:/home/runner/.npm
-      - github-runner-2-cargo:/home/runner/.cargo
-      - github-runner-2-pnpm-store:/home/runner/.local/share/pnpm/store
+      - github-runner-cache:/home/runner/.cache
+      - github-runner-npm:/home/runner/.npm
+      - github-runner-cargo:/home/runner/.cargo
+      - github-runner-pnpm-store:/home/runner/.local/share/pnpm/store
       - github-runner-toolcache:/opt/hostedtoolcache
 
 volumes:
   github-runner-work:
+  github-runner-2-work:
   github-runner-cache:
   github-runner-npm:
   github-runner-cargo:
   github-runner-pnpm-store:
   github-runner-toolcache:
-  github-runner-2-work:
-  github-runner-2-cache:
-  github-runner-2-npm:
-  github-runner-2-cargo:
-  github-runner-2-pnpm-store:
