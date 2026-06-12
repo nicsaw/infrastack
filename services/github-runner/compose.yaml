@@ -47,8 +47,8 @@ services:
 
 volumes:
   github-runner-work:
-  github-runner-2-work:
   github-runner-cache:
+  github-runner-2-work:
   github-runner-2-cache:
   github-runner-npm:
   github-runner-cargo:
