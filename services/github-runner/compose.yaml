@@ -14,11 +14,6 @@ x-runner: &runner
       max-size: "10m"
       max-file: "3"
 
-# Cache volumes are SHARED across runners (pnpm/npm/cargo/.cache are content-
-# addressed or rely on their own lockfiles for concurrent access). A PR scheduled
-# on runner 2 hits the cache that runner 1 just warmed. Only `_work` and
-# `toolcache` semantics differ: `_work` stays per-runner so concurrent jobs do
-# not clobber each other's checkouts; `toolcache` was already shared.
 services:
   github-runner:
     <<: *runner
