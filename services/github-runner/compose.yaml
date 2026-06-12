@@ -40,20 +40,17 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - github-runner-2-work:/_work
       - github-runner-2-cache:/home/runner/.cache
-      - github-runner-2-npm:/home/runner/.npm
-      - github-runner-2-cargo:/home/runner/.cargo
-      - github-runner-2-pnpm-store:/home/runner/.local/share/pnpm/store
+      - github-runner-npm:/home/runner/.npm
+      - github-runner-cargo:/home/runner/.cargo
+      - github-runner-pnpm-store:/home/runner/.local/share/pnpm/store
       - github-runner-toolcache:/opt/hostedtoolcache
 
 volumes:
   github-runner-work:
   github-runner-cache:
+  github-runner-2-work:
+  github-runner-2-cache:
   github-runner-npm:
   github-runner-cargo:
   github-runner-pnpm-store:
   github-runner-toolcache:
-  github-runner-2-work:
-  github-runner-2-cache:
-  github-runner-2-npm:
-  github-runner-2-cargo:
-  github-runner-2-pnpm-store:
