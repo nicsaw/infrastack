@@ -309,6 +309,39 @@ cd ~/pc-to-server
 docker compose up -d
 ```
 
+## [Hermes Agent](https://hermes-agent.nousresearch.com)
+
+[Hermes Agent](services/hermes-agent/compose.yaml) runs the messaging gateway and dashboard.
+
+Set the Hermes values in `.env`:
+
+- `HERMES_API_SERVER_KEY`: gateway API key. Generate one with `openssl rand -hex 32`
+- `OPENROUTER_API_KEY`: OpenRouter API key
+- `HERMES_TELEGRAM_BOT_TOKEN` and `HERMES_TELEGRAM_ALLOWED_USERS`: optional Telegram bot access
+- `HERMES_DISCORD_BOT_TOKEN` and `HERMES_DISCORD_ALLOWED_USERS`: optional Discord bot access
+
+### Discord Gateway
+
+Create an application in the [Discord Developer Portal](https://discord.com/developers/applications)
+
+Under the `Bot` tab, enable:
+
+- `Presence Intent`
+- `Server Members Intent`
+- `Message Content Intent`
+
+Reset and copy the bot token, then enable Discord Developer Mode and copy your user ID.
+
+Invite the bot to a server with
+
+```
+https://discord.com/oauth2/authorize?client_id=<APP_ID>&scope=bot+applications.commands&permissions=274878286912
+```
+
+- `APP_ID`: `General Information` -> `Application ID`
+
+The dashboard is available at `http://localhost:9119`, and the gateway API is available at `http://localhost:8642`.
+
 ## [Ollama](https://ollama.com) & [Open WebUI](https://openwebui.com)
 
 [Select an LLM](https://ollama.com/library) and download it:
