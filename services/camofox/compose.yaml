@@ -1,0 +1,29 @@
+services:
+  camofox-browser:
+    image: camofox-browser
+    container_name: camofox-browser
+    restart: unless-stopped
+    build:
+      context: https://github.com/jo-inc/camofox-browser.git#v1.11.2
+      dockerfile: Dockerfile.ci
+      args:
+        CAMOUFOX_VERSION: "135.0.1"
+        CAMOUFOX_RELEASE: beta.24
+    environment:
+      - CAMOFOX_PORT=9377
+      - CAMOFOX_CRASH_REPORT_ENABLED=${CAMOFOX_CRASH_REPORT_ENABLED:-false}
+    volumes:
+      - ./data:/root/.camofox
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9377/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
