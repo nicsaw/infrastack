@@ -3,17 +3,14 @@ services:
     image: ghcr.io/redf0x1/camofox-browser
     container_name: camofox-browser
     restart: unless-stopped
-    ports:
-      - "9377:9377"
+    network_mode: "service:hermes-agent"
+    depends_on:
+      - hermes-agent
     environment:
-      - CAMOFOX_HOST=0.0.0.0
       - CAMOFOX_PORT=9377
-      - CAMOFOX_API_KEY=${CAMOFOX_API_KEY}
       - CAMOFOX_CRASH_REPORT_ENABLED=${CAMOFOX_CRASH_REPORT_ENABLED:-false}
     volumes:
       - ./data:/root/.camofox
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9377/health"]
       interval: 30s
