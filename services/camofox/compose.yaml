@@ -1,14 +1,8 @@
 services:
   camofox-browser:
-    image: camofox-browser
+    image: ghcr.io/redf0x1/camofox-browser
     container_name: camofox-browser
     restart: unless-stopped
-    build:
-      context: https://github.com/jo-inc/camofox-browser.git#v1.11.2
-      dockerfile: Dockerfile.ci
-      args:
-        CAMOUFOX_VERSION: "135.0.1"
-        CAMOUFOX_RELEASE: beta.24
     environment:
       - CAMOFOX_PORT=9377
       - CAMOFOX_CRASH_REPORT_ENABLED=${CAMOFOX_CRASH_REPORT_ENABLED:-false}
