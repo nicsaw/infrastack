@@ -3,10 +3,9 @@ services:
     image: ghcr.io/redf0x1/camofox-browser
     container_name: camofox-browser
     restart: unless-stopped
-    expose:
-      - "9377"
+    ports:
+      - "9377:9377"
     environment:
-      - CAMOFOX_HOST=0.0.0.0
       - CAMOFOX_PORT=9377
       - CAMOFOX_CRASH_REPORT_ENABLED=${CAMOFOX_CRASH_REPORT_ENABLED:-false}
     volumes:
