@@ -6,9 +6,16 @@ services:
     network_mode: "service:hermes-agent"
     depends_on:
       - hermes-agent
+    ports:
+      - "9377:9377"
+      - "6080:6080"
+      - "5901:5900"
     environment:
       - CAMOFOX_PORT=9377
       - CAMOFOX_CRASH_REPORT_ENABLED=${CAMOFOX_CRASH_REPORT_ENABLED:-false}
+      - ENABLE_VNC=1
+      - VNC_BIND=0.0.0.0
+      - VNC_RESOLUTION=1920x1080
     volumes:
       - ./data:/root/.camofox
     healthcheck:
