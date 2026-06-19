@@ -18,11 +18,7 @@ services:
       - DISCORD_BOT_TOKEN=${HERMES_DISCORD_BOT_TOKEN} # https://discord.com/developers/applications -> <APP_NAME> -> Bot -> Token -> Reset Token -> Copy
       - DISCORD_ALLOWED_USERS=${HERMES_DISCORD_ALLOWED_USERS:-357517280495796224}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - CAMOFOX_URL=http://localhost:9377
-      - CAMOFOX_REWRITE_LOOPBACK_URLS=true
-      - CAMOFOX_LOOPBACK_HOST_ALIAS=host.docker.internal
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      - CAMOFOX_URL=http://camofox-browser:9377
     deploy:
       resources:
         limits:

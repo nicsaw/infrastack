@@ -3,9 +3,6 @@ services:
     image: ghcr.io/redf0x1/camofox-browser
     container_name: camofox-browser
     restart: unless-stopped
-    network_mode: "service:hermes-agent"
-    depends_on:
-      - hermes-agent
     environment:
       - CAMOFOX_PORT=9377
       - CAMOFOX_CRASH_REPORT_ENABLED=${CAMOFOX_CRASH_REPORT_ENABLED:-false}
