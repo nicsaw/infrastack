@@ -8,8 +8,6 @@ services:
       - hermes-agent
     ports:
       - "9377:9377"
-      - "6080:6080"
-      - "5901:5900"
     environment:
       - CAMOFOX_PORT=9377
       - CAMOFOX_CRASH_REPORT_ENABLED=${CAMOFOX_CRASH_REPORT_ENABLED:-false}

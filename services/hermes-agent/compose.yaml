@@ -7,6 +7,8 @@ services:
     ports:
       - "8642:8642" # gateway API
       - "9119:9119" # dashboard
+      - "6080:6080" # Camofox noVNC - https://hermes-agent.nousresearch.com/docs/user-guide/features/browser#camofox-local-mode
+      - "5901:5900" # Camofox VNC
     volumes:
       - ./data:/opt/data
     environment: # https://hermes-agent.nousresearch.com/docs/reference/environment-variables
