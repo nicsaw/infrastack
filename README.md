@@ -1,4 +1,4 @@
-# pc-to-server
+# InfraStack
 
 This project repurposes a Windows laptop into a server, with a macOS client used for administration and access.
 
@@ -72,8 +72,8 @@ Clone this repository:
 
 ```bash
 cd ~
-git clone https://github.com/nicsaw/pc-to-server.git
-cd pc-to-server
+git clone https://github.com/nicsaw/infrastack.git
+cd infrastack
 ```
 
 ## Private Submodules
@@ -305,7 +305,7 @@ newgrp docker
 [Start services](compose.yaml):
 
 ```bash
-cd ~/pc-to-server
+cd ~/infrastack
 docker compose up -d
 ```
 
@@ -438,7 +438,7 @@ jobs:
 ## [OpenClaw](https://docs.openclaw.ai)
 
 ```bash
-mkdir -p ~/pc-to-server/services/openclaw/config ~/pc-to-server/services/openclaw/workspace
+mkdir -p ~/infrastack/services/openclaw/config ~/infrastack/services/openclaw/workspace
 ```
 
 [SSH Tunnel](https://docs.openclaw.ai/gateway/remote#ssh-tunnel-cli-+-tools):

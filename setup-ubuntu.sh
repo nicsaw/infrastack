@@ -7,8 +7,8 @@ sudo apt update && sudo apt upgrade -y
 # Git
 echo "🔵 Git"
 sudo apt install -y git curl
-git clone https://github.com/nicsaw/pc-to-server.git ~/pc-to-server || echo "⚠️ ~/pc-to-server already exists."
-cd ~/pc-to-server
+git clone https://github.com/nicsaw/infrastack.git ~/infrastack || echo "⚠️ ~/infrastack already exists."
+cd ~/infrastack
 
 # OpenSSH
 echo "🔵 OpenSSH"
@@ -73,11 +73,11 @@ cp -n .env.example .env || echo "⚠️ ~/.env already exists, skipping copy"
 
 # n8n
 echo "🔵 n8n"
-mkdir -p ~/pc-to-server/services/n8n/local-files
+mkdir -p ~/infrastack/services/n8n/local-files
 
 # Ollama & Open WebUI
 echo "🔵 Ollama & Open WebUI"
-cd ~/pc-to-server
+cd ~/infrastack
 # docker exec ollama ollama pull llama3.1
 
 # Tailscale
