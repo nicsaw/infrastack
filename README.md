@@ -309,6 +309,24 @@ cd ~/infrastack
 docker compose up -d
 ```
 
+## [K3s](https://docs.k3s.io)
+
+Install K3s on the WSL Ubuntu server:
+
+```bash
+cd ~/infrastack
+sudo ./scripts/install-k3s.sh
+```
+
+Verify the service, node, system workloads, and InfraStack configuration:
+
+```bash
+sudo systemctl is-active k3s
+sudo kubectl get nodes
+sudo kubectl get pods --all-namespaces
+sudo kubectl kustomize kubernetes/clusters/homelab
+```
+
 ## [Hermes Agent](https://hermes-agent.nousresearch.com)
 
 [Hermes Agent](services/hermes-agent/compose.yaml) runs the messaging gateway and dashboard.
