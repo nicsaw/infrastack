@@ -327,6 +327,50 @@ sudo kubectl get pods --all-namespaces
 sudo kubectl kustomize kubernetes/clusters/homelab
 ```
 
+## [Argo CD](https://argo-cd.readthedocs.io)
+
+### Web UI
+
+Forward the Argo CD server to the WSL host:
+
+```bash
+sudo kubectl port-forward \
+  --namespace argocd \
+  service/argocd-server \
+  8080:443
+```
+
+Keep the terminal open and visit [https://localhost:8080](https://localhost:8080). The browser will display a certificate warning because Argo CD uses a self-signed certificate.
+
+Get the initial administrator password in another terminal:
+
+```bash
+sudo kubectl get secret argocd-initial-admin-secret \
+  --namespace argocd \
+  --output=jsonpath='{.data.password}' \
+  | base64 --decode
+echo
+```
+
+Log in with these credentials:
+
+| Field | Value |
+|---|---|
+| Username | `admin` |
+| Password | Output from the previous command |
+| URL | `https://localhost:8080` |
+
+### macOS
+
+With the Kubernetes port-forward running on WSL, create an SSH tunnel from the macOS client:
+
+```zsh
+ssh -N -L 8080:127.0.0.1:8080 \
+  saw@<TAILSCALE_HOSTNAME>
+```
+
+Visit [https://localhost:8080](https://localhost:8080) on the Mac. Keep both the Kubernetes port-forward and SSH tunnel running while using the UI.
+
 ## [Hermes Agent](https://hermes-agent.nousresearch.com)
 
 [Hermes Agent](services/hermes-agent/compose.yaml) runs the messaging gateway and dashboard.
