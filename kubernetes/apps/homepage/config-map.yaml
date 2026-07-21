@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage
+  labels:
+    app.kubernetes.io/name: homepage
+data:
+  kubernetes.yaml: |
+    mode: cluster
+    ingress: false
+    gateway: true
+  settings.yaml: |
+    title: InfraStack
+    disableIndexing: true
+  services.yaml: "[]"
+  bookmarks.yaml: "[]"
+  widgets.yaml: "[]"
+  docker.yaml: ""
+  custom.css: ""
+  custom.js: ""
