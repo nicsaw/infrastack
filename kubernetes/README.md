@@ -32,6 +32,8 @@ tailscale serve status
 
 Open Homepage at <https://rogwsl.tail9ac68b.ts.net/>. Applications discovered from Gateway API routes appear there automatically. MeTube is available directly at <https://rogwsl.tail9ac68b.ts.net/metube/>.
 
+Tailscale is the private remote-access path, not the local firewall boundary. Traefik continues to listen on port 80 inside WSL, so treat the Windows and WSL host as trusted or restrict that port with the host firewall.
+
 Remove the private proxy when it is no longer needed:
 
 ```bash

@@ -17,14 +17,14 @@ spec:
       serviceAccountName: homepage
       containers:
         - name: homepage
-          image: ghcr.io/gethomepage/homepage:v1.13.1
+          image: ghcr.io/gethomepage/homepage:v1.13.2
           env:
             - name: MY_POD_IP
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
             - name: HOMEPAGE_ALLOWED_HOSTS
-              value: "$(MY_POD_IP):3000,rogwsl.tail9ac68b.ts.net"
+              value: "$(MY_POD_IP):3000,rogwsl.tail9ac68b.ts.net,127.0.0.1"
           ports:
             - name: http
               containerPort: 3000
