@@ -8,7 +8,7 @@ metadata:
     gethomepage.dev/description: Video downloader
     gethomepage.dev/group: Media
     gethomepage.dev/icon: metube.png
-    gethomepage.dev/href: https://rogwsl.tail9ac68b.ts.net/metube/
+    gethomepage.dev/href: /metube/
     gethomepage.dev/pod-selector: app.kubernetes.io/name=metube
 spec:
   parentRefs:
