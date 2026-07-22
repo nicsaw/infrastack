@@ -2,10 +2,22 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: metube
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: MeTube
+    gethomepage.dev/description: Video downloader
+    gethomepage.dev/group: Media
+    gethomepage.dev/icon: metube.png
+    gethomepage.dev/href: /metube/
+    gethomepage.dev/pod-selector: app.kubernetes.io/name=metube
 spec:
   parentRefs:
     - name: homelab
   rules:
-    - backendRefs:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /metube/
+      backendRefs:
         - name: metube
           port: 8081
