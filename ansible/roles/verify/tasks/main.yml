@@ -1,0 +1,90 @@
+---
+- name: Read service state
+  ansible.builtin.service_facts:
+
+- name: Require running host services
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.services["tailscaled.service"].state == "running"
+      - ansible_facts.services["k3s.service"].state == "running"
+    fail_msg: "tailscaled and k3s must both be running."
+
+- name: Verify the Kubernetes node
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - wait
+      - --for=condition=Ready
+      - nodes
+      - --all
+      - --timeout=60s
+  changed_when: false
+
+- name: Verify Homepage deployment
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - rollout
+      - status
+      - deployment/homepage
+      - --namespace=default
+      - --timeout=5m
+  changed_when: false
+
+- name: Verify MeTube deployment
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - rollout
+      - status
+      - deployment/metube
+      - --namespace=default
+      - --timeout=5m
+  changed_when: false
+
+- name: Verify local Homepage
+  ansible.builtin.uri:
+    url: http://127.0.0.1/
+    status_code: 200
+  register: verify_local_homepage
+  retries: 12
+  delay: 5
+  until: verify_local_homepage.status == 200
+
+- name: Verify local MeTube
+  ansible.builtin.uri:
+    url: http://127.0.0.1/metube/
+    status_code: 200
+  register: verify_local_metube
+  retries: 12
+  delay: 5
+  until: verify_local_metube.status == 200
+
+- name: Verify private Homepage
+  ansible.builtin.uri:
+    url: "https://{{ tailscale_dns_name }}/"
+    status_code: 200
+    validate_certs: true
+  register: verify_private_homepage
+  retries: 12
+  delay: 5
+  until: verify_private_homepage.status == 200
+
+- name: Verify private MeTube
+  ansible.builtin.uri:
+    url: "https://{{ tailscale_dns_name }}/metube/"
+    status_code: 200
+    validate_certs: true
+  register: verify_private_metube
+  retries: 12
+  delay: 5
+  until: verify_private_metube.status == 200
+
+- name: Print access URLs
+  ansible.builtin.debug:
+    msg:
+      - "Homepage: https://{{ tailscale_dns_name }}/"
+      - "MeTube: https://{{ tailscale_dns_name }}/metube/"

@@ -145,3 +145,6 @@ compose.override.yaml
 services/minecraft-server/data/
 services/hermes-agent/data/
 services/camofox/data/
+
+# Per-host bootstrap configuration
+/config.yml

@@ -1,0 +1,43 @@
+---
+- name: Check for K3s
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s
+  register: k3s_binary
+
+- name: Download the official K3s installer
+  ansible.builtin.get_url:
+    url: https://get.k3s.io
+    dest: /tmp/install-k3s.sh
+    mode: "0755"
+  when: not k3s_binary.stat.exists
+  register: k3s_installer
+  retries: 3
+  delay: 5
+  until: k3s_installer is succeeded
+
+- name: Install K3s
+  ansible.builtin.command: /bin/sh /tmp/install-k3s.sh
+  when: not k3s_binary.stat.exists
+  changed_when: true
+  register: k3s_install
+  retries: 3
+  delay: 5
+  until: k3s_install.rc == 0
+
+- name: Enable and start K3s
+  ansible.builtin.systemd_service:
+    name: k3s
+    enabled: true
+    state: started
+
+- name: Wait for the Kubernetes node
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - wait
+      - --for=condition=Ready
+      - nodes
+      - --all
+      - --timeout=5m
+  changed_when: false

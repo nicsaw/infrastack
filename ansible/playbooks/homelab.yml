@@ -1,0 +1,52 @@
+---
+- name: Configure InfraStack
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  become: true
+
+  vars:
+    project_root: "{{ playbook_dir }}/../.."
+    config_file: "{{ playbook_dir }}/../../config.yml"
+    cluster_name: homelab
+    repository_url: auto
+    repository_revision: main
+
+  pre_tasks:
+    - name: Check for local configuration
+      ansible.builtin.stat:
+        path: "{{ config_file }}"
+      become: false
+      register: local_config
+
+    - name: Load local configuration
+      ansible.builtin.include_vars:
+        file: "{{ config_file }}"
+      when: local_config.stat.exists
+
+  roles:
+    - role: prerequisites
+    - role: tailscale
+    - role: k3s
+    - role: argocd
+    - role: runtime_config
+
+  tasks:
+    - name: Bootstrap the Argo CD Application
+      ansible.builtin.include_role:
+        name: argocd
+        tasks_from: application
+
+    - name: Restart Homepage when runtime configuration changed
+      ansible.builtin.include_role:
+        name: runtime_config
+        tasks_from: restart
+
+    - name: Configure Tailscale Serve
+      ansible.builtin.include_role:
+        name: tailscale
+        tasks_from: serve
+
+    - name: Verify InfraStack
+      ansible.builtin.include_role:
+        name: verify

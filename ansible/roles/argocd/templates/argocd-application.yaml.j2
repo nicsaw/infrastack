@@ -1,13 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: homelab
+  name: {{ cluster_name }}
   namespace: argocd
 spec:
   project: default
   source:
-    repoURL: https://github.com/nicsaw/infrastack.git
-    targetRevision: main
+    repoURL: {{ prerequisites_resolved_repository_url | quote }}
+    targetRevision: {{ repository_revision | quote }}
     path: kubernetes/clusters/homelab
   destination:
     server: https://kubernetes.default.svc

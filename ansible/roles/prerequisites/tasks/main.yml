@@ -1,0 +1,123 @@
+---
+- name: Require Ubuntu 24.04
+  ansible.builtin.assert:
+    that:
+      - ansible_distribution == "Ubuntu"
+      - ansible_distribution_version is version("24.04", "==")
+    fail_msg: "Unsupported host: Ubuntu 24.04 is required."
+
+- name: Read PID 1 process name
+  ansible.builtin.command: cat /proc/1/comm
+  changed_when: false
+  register: prerequisites_pid_one
+
+- name: Require systemd
+  ansible.builtin.assert:
+    that:
+      - prerequisites_pid_one.stdout | trim == "systemd"
+    fail_msg: "Unsupported host: systemd must run as PID 1."
+
+- name: Install base packages
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - git
+      - iproute2
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Read Git origin # noqa command-instead-of-module
+  ansible.builtin.command:
+    argv:
+      - git
+      - -C
+      - "{{ project_root }}"
+      - remote
+      - get-url
+      - origin
+  become: false
+  changed_when: false
+  register: prerequisites_git_origin
+  when: repository_url == "auto"
+
+- name: Resolve repository URL
+  ansible.builtin.set_fact:
+    prerequisites_resolved_repository_url: >-
+      {{
+        (
+          prerequisites_git_origin.stdout
+          | regex_replace('^git@github.com:', 'https://github.com/')
+          | regex_replace('^ssh://git@github.com/', 'https://github.com/')
+        )
+        if repository_url == "auto"
+        else repository_url
+      }}
+
+- name: Require a public HTTPS repository
+  ansible.builtin.assert:
+    that:
+      - prerequisites_resolved_repository_url is match('^https://')
+      - prerequisites_resolved_repository_url is not match('^https://[^/]*@')
+    fail_msg: >-
+      Argo CD requires a public HTTPS repository URL without credentials.
+      Set repository_url in config.yml.
+
+- name: Check the public repository revision # noqa command-instead-of-module
+  ansible.builtin.command:
+    argv:
+      - git
+      - -c
+      - credential.helper=
+      - -c
+      - http.extraHeader=
+      - -c
+      - http.cookieFile=
+      - ls-remote
+      - --exit-code
+      - "{{ prerequisites_resolved_repository_url }}"
+      - "{{ repository_revision }}"
+  args:
+    chdir: /tmp
+  environment:
+    GIT_ASKPASS: /bin/false
+    GIT_CONFIG_GLOBAL: /dev/null
+    GIT_CONFIG_NOSYSTEM: "1"
+    GIT_TERMINAL_PROMPT: "0"
+    HOME: /tmp/infrastack-git-probe
+    XDG_CONFIG_HOME: /tmp/infrastack-git-probe
+  become: false
+  changed_when: false
+  failed_when: false
+  register: prerequisites_repository_revision
+
+- name: Require a reachable public repository revision
+  ansible.builtin.assert:
+    that:
+      - prerequisites_repository_revision.rc == 0
+    fail_msg: >-
+      Repository {{ prerequisites_resolved_repository_url }} revision
+      {{ repository_revision }} is not publicly reachable without credentials.
+      git ls-remote exited {{ prerequisites_repository_revision.rc }}:
+      {{
+        prerequisites_repository_revision.stderr
+        | trim
+        | default('no details', true)
+      }}
+
+- name: Check whether K3s is already installed
+  ansible.builtin.stat:
+    path: /usr/local/bin/k3s
+  register: prerequisites_existing_k3s
+
+- name: Read listening TCP ports
+  ansible.builtin.command: ss --numeric --listening --tcp
+  changed_when: false
+  register: prerequisites_listening_tcp
+
+- name: Require free web ports before a new K3s installation
+  ansible.builtin.assert:
+    that:
+      - prerequisites_existing_k3s.stat.exists or not (prerequisites_listening_tcp.stdout is regex('(?m):(?:80|443)\\s'))
+    fail_msg: "Ports 80 or 443 are already occupied by a non-K3s installation."

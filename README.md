@@ -1,5 +1,42 @@
 # InfraStack
 
+## Automated installation
+
+InfraStack supports Ubuntu 24.04 on a Linux machine or under WSL2 with systemd.
+
+```bash
+git clone https://github.com/nicsaw/infrastack.git
+cd infrastack
+./bootstrap.sh
+```
+
+The installer:
+
+1. Installs Ansible Core when required.
+2. Installs and authenticates Tailscale.
+3. Installs K3s and Argo CD.
+4. Reconciles the Kubernetes applications.
+5. Configures private HTTPS with Tailscale Serve.
+6. Verifies Homepage and MeTube before printing their URLs.
+
+The installer pauses once for Tailscale browser authentication. It is safe to run again.
+
+To override the repository or cluster name:
+
+```bash
+cp config.example.yml config.yml
+```
+
+Edit `config.yml`, then run `./bootstrap.sh`. The local file is ignored by Git.
+
+### Client requirement
+
+Install Tailscale on each laptop or phone that needs access and authenticate it to the same tailnet. The installer configures only the server.
+
+### WSL2 requirement
+
+WSL2 must use Ubuntu 24.04 with systemd enabled. The existing Windows and WSL notes below describe the host preparation.
+
 This project repurposes a Windows laptop into a server, with a macOS client used for administration and access.
 
 ## Laptop Settings

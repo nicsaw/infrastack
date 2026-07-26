@@ -1,0 +1,12 @@
+---
+- name: Restart Homepage
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - rollout
+      - restart
+      - deployment/homepage
+      - --namespace=default
+  changed_when: true
+  when: runtime_config_homepage_restart_needed | default(false)

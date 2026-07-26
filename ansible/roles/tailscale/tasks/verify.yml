@@ -1,0 +1,25 @@
+---
+- name: Read final Tailscale status
+  ansible.builtin.command: tailscale status --json
+  changed_when: false
+  register: tailscale_final_tailscale_status
+
+- name: Parse final Tailscale status
+  ansible.builtin.set_fact:
+    tailscale_status_data: "{{ tailscale_final_tailscale_status.stdout | from_json }}"
+
+- name: Resolve the Tailscale DNS name
+  ansible.builtin.set_fact:
+    tailscale_dns_name: >-
+      {{
+        tailscale_status_data.Self.DNSName
+        | default('')
+        | regex_replace('\\.$', '')
+      }}
+
+- name: Require a running backend and DNS name
+  ansible.builtin.assert:
+    that:
+      - tailscale_status_data.BackendState == "Running"
+      - tailscale_dns_name | length > 0
+    fail_msg: "Tailscale is not Running or did not provide a DNS name."
