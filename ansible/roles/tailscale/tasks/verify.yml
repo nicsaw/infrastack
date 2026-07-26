@@ -14,7 +14,7 @@
       {{
         tailscale_status_data.Self.DNSName
         | default('')
-        | regex_replace('\\.$', '')
+        | regex_replace('[.]$', '')
       }}
 
 - name: Require a running backend and DNS name
