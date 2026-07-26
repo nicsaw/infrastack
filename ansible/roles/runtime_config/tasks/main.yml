@@ -1,4 +1,19 @@
 ---
+- name: Read existing Homepage runtime configuration
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - get
+      - configmap/homepage-runtime
+      - --namespace=default
+      - --output=jsonpath={.data.external-host}
+  changed_when: false
+  failed_when:
+    - runtime_config_existing_homepage_runtime.rc != 0
+    - "'NotFound' not in runtime_config_existing_homepage_runtime.stderr"
+  register: runtime_config_existing_homepage_runtime
+
 - name: Install Homepage runtime configuration
   ansible.builtin.template:
     src: homepage-runtime.yaml.j2
@@ -12,9 +27,26 @@
     argv:
       - k3s
       - kubectl
-      - wait
-      - --for=create
+      - get
       - configmap/homepage-runtime
       - --namespace=default
-      - --timeout=60s
+      - --output=jsonpath={.data.external-host}
   changed_when: false
+  register: runtime_config_homepage_runtime
+  retries: 30
+  delay: 2
+  until:
+    - runtime_config_homepage_runtime.rc == 0
+    - (runtime_config_homepage_runtime.stdout | trim) == tailscale_dns_name
+
+- name: Determine whether Homepage requires a restart
+  ansible.builtin.set_fact:
+    runtime_config_homepage_restart_needed: >-
+      {{
+        runtime_config_existing_homepage_runtime.rc == 0
+        and
+        (
+          runtime_config_existing_homepage_runtime.stdout
+          | trim
+        ) != tailscale_dns_name
+      }}

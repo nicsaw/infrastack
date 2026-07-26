@@ -36,34 +36,75 @@
   failed_when: false
   register: tailscale_initial_tailscale_status
 
-- name: Determine whether authentication is required
+- name: Read the initial Tailscale backend state
   ansible.builtin.set_fact:
-    tailscale_needs_login: >-
+    tailscale_initial_backend_state: >-
       {{
-        tailscale_initial_tailscale_status.rc != 0
-        or
         (
-          (tailscale_initial_tailscale_status.stdout | default('{}') | from_json).BackendState
-          | default('NeedsLogin')
-        ) != 'Running'
+          tailscale_initial_tailscale_status.stdout
+          | from_json
+        ).BackendState
+        if tailscale_initial_tailscale_status.rc == 0
+        else 'Unknown'
       }}
 
-- name: Request a Tailscale login URL
-  ansible.builtin.command: tailscale login --timeout=2s
-  changed_when: false
-  failed_when: false
-  register: tailscale_login
-  when: tailscale_needs_login
+- name: Connect Tailscale
+  ansible.builtin.command:
+    argv:
+      - tailscale
+      - up
+      - --timeout=2s
+  changed_when: true
+  register: tailscale_up
+  when: tailscale_initial_backend_state != "Running"
+  failed_when:
+    - tailscale_up.rc != 0
+    - >-
+      (
+        (
+          tailscale_up.stdout
+          ~ '\n'
+          ~ tailscale_up.stderr
+        )
+        | regex_search(
+          'https://login\.tailscale\.com/[A-Za-z0-9/?&._=%:+~-]+'
+        )
+        | default('', true)
+        | length
+      ) == 0
 
-- name: Display the Tailscale login instructions
+- name: Read the Tailscale authentication URL
+  ansible.builtin.set_fact:
+    tailscale_auth_url: >-
+      {{
+        (
+          tailscale_up.stdout
+          ~ '\n'
+          ~ tailscale_up.stderr
+        )
+        | regex_search(
+          'https://login\.tailscale\.com/[A-Za-z0-9/?&._=%:+~-]+'
+        )
+        | default('', true)
+      }}
+  when: tailscale_initial_backend_state != "Running"
+
+- name: Require a usable Tailscale authentication URL before prompting
+  ansible.builtin.assert:
+    that:
+      - tailscale_auth_url is match('^https://login\.tailscale\.com/')
+    fail_msg: "Tailscale did not provide a usable HTTPS authentication URL."
+  when: tailscale_auth_url | default('') | length > 0
+
+- name: Display the Tailscale authentication URL
   ansible.builtin.debug:
-    msg: "{{ (tailscale_login.stdout_lines + tailscale_login.stderr_lines) | join('\n') }}"
-  when: tailscale_needs_login
+    msg: "Authenticate this server at {{ tailscale_auth_url }}"
+  when: tailscale_auth_url | default('') | length > 0
 
 - name: Wait for the user to authenticate Tailscale
   ansible.builtin.pause:
     prompt: "Open the URL above, authenticate this server, then press Enter"
-  when: tailscale_needs_login
+  when: tailscale_auth_url | default('') | length > 0
 
 - name: Wait for the Tailscale backend
   ansible.builtin.command: tailscale status --json

@@ -37,6 +37,11 @@
         name: argocd
         tasks_from: application
 
+    - name: Restart Homepage when runtime configuration changed
+      ansible.builtin.include_role:
+        name: runtime_config
+        tasks_from: restart
+
     - name: Configure Tailscale Serve
       ansible.builtin.include_role:
         name: tailscale
