@@ -1,0 +1,22 @@
+---
+- name: Configure Tailscale Serve
+  ansible.builtin.command:
+    argv:
+      - tailscale
+      - serve
+      - --bg
+      - --yes
+      - http://127.0.0.1:80
+  changed_when: false
+  register: tailscale_serve
+
+- name: Read Tailscale Serve status
+  ansible.builtin.command: tailscale serve status --json
+  changed_when: false
+  register: tailscale_serve_status
+
+- name: Require a Serve configuration
+  ansible.builtin.assert:
+    that:
+      - (tailscale_serve_status.stdout | from_json) | length > 0
+    fail_msg: "Tailscale Serve did not retain an HTTPS proxy configuration."

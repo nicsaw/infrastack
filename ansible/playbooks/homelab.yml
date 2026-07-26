@@ -36,3 +36,12 @@
       ansible.builtin.include_role:
         name: argocd
         tasks_from: application
+
+    - name: Configure Tailscale Serve
+      ansible.builtin.include_role:
+        name: tailscale
+        tasks_from: serve
+
+    - name: Verify InfraStack
+      ansible.builtin.include_role:
+        name: verify
