@@ -1,0 +1,40 @@
+---
+- name: Check for the Argo CD namespace
+  ansible.builtin.command: k3s kubectl get namespace argocd
+  changed_when: false
+  failed_when: false
+  register: argocd_namespace
+
+- name: Create the Argo CD namespace
+  ansible.builtin.command: k3s kubectl create namespace argocd
+  when: argocd_namespace.rc != 0
+  changed_when: true
+
+- name: Install Argo CD stable
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - apply
+      - --namespace=argocd
+      - --server-side
+      - --force-conflicts
+      - --filename=https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  register: argocd_apply
+  changed_when: "'configured' in argocd_apply.stdout or 'created' in argocd_apply.stdout"
+  retries: 3
+  delay: 10
+  until: argocd_apply.rc == 0
+
+- name: Wait for Argo CD deployments
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - wait
+      - --namespace=argocd
+      - --for=condition=Available
+      - deployment
+      - --all
+      - --timeout=5m
+  changed_when: false

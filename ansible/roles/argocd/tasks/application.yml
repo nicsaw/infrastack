@@ -1,0 +1,36 @@
+---
+- name: Render the Argo CD Application
+  ansible.builtin.template:
+    src: argocd-application.yaml.j2
+    dest: /tmp/infrastack-argocd-application.yaml
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Apply the Argo CD Application
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - apply
+      - --filename=/tmp/infrastack-argocd-application.yaml
+  register: application_apply
+  changed_when: "'configured' in application_apply.stdout or 'created' in application_apply.stdout"
+
+- name: Wait for the Argo CD Application
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - get
+      - application
+      - "{{ cluster_name }}"
+      - --namespace=argocd
+      - --output=json
+  changed_when: false
+  register: argocd_application
+  retries: 60
+  delay: 5
+  until:
+    - (argocd_application.stdout | from_json).status.sync.status | default("") == "Synced"
+    - (argocd_application.stdout | from_json).status.health.status | default("") == "Healthy"

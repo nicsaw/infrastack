@@ -28,4 +28,11 @@
     - role: prerequisites
     - role: tailscale
     - role: k3s
+    - role: argocd
     - role: runtime_config
+
+  tasks:
+    - name: Bootstrap the Argo CD Application
+      ansible.builtin.include_role:
+        name: argocd
+        tasks_from: application
