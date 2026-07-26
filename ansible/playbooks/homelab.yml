@@ -1,0 +1,28 @@
+---
+- name: Configure InfraStack
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  become: true
+
+  vars:
+    project_root: "{{ playbook_dir }}/../.."
+    config_file: "{{ playbook_dir }}/../../config.yml"
+    cluster_name: homelab
+    repository_url: auto
+    repository_revision: main
+
+  pre_tasks:
+    - name: Check for local configuration
+      ansible.builtin.stat:
+        path: "{{ config_file }}"
+      become: false
+      register: local_config
+
+    - name: Load local configuration
+      ansible.builtin.include_vars:
+        file: "{{ config_file }}"
+      when: local_config.stat.exists
+
+  roles:
+    - role: prerequisites
