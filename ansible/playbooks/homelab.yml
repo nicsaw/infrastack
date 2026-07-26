@@ -26,3 +26,4 @@
 
   roles:
     - role: prerequisites
+    - role: tailscale

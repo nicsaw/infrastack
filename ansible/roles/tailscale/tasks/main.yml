@@ -1,0 +1,83 @@
+---
+- name: Check for Tailscale
+  ansible.builtin.stat:
+    path: /usr/bin/tailscale
+  register: tailscale_binary
+
+- name: Download the official Tailscale installer
+  ansible.builtin.get_url:
+    url: https://tailscale.com/install.sh
+    dest: /tmp/tailscale-install.sh
+    mode: "0755"
+  when: not tailscale_binary.stat.exists
+  register: tailscale_installer
+  retries: 3
+  delay: 5
+  until: tailscale_installer is succeeded
+
+- name: Install Tailscale
+  ansible.builtin.command: /bin/sh /tmp/tailscale-install.sh
+  when: not tailscale_binary.stat.exists
+  changed_when: true
+  register: tailscale_install
+  retries: 3
+  delay: 5
+  until: tailscale_install.rc == 0
+
+- name: Enable and start tailscaled
+  ansible.builtin.systemd_service:
+    name: tailscaled
+    enabled: true
+    state: started
+
+- name: Read initial Tailscale status
+  ansible.builtin.command: tailscale status --json
+  changed_when: false
+  failed_when: false
+  register: initial_tailscale_status
+
+- name: Determine whether authentication is required
+  ansible.builtin.set_fact:
+    tailscale_needs_login: >-
+      {{
+        initial_tailscale_status.rc != 0
+        or
+        (
+          (initial_tailscale_status.stdout | default('{}') | from_json).BackendState
+          | default('NeedsLogin')
+        ) != 'Running'
+      }}
+
+- name: Request a Tailscale login URL
+  ansible.builtin.command: tailscale login --timeout=2s
+  changed_when: false
+  failed_when: false
+  register: tailscale_login
+  when: tailscale_needs_login
+
+- name: Display the Tailscale login instructions
+  ansible.builtin.debug:
+    msg: "{{ (tailscale_login.stdout_lines + tailscale_login.stderr_lines) | join('\n') }}"
+  when: tailscale_needs_login
+
+- name: Wait for the user to authenticate Tailscale
+  ansible.builtin.pause:
+    prompt: "Open the URL above, authenticate this server, then press Enter"
+  when: tailscale_needs_login
+
+- name: Wait for the Tailscale backend
+  ansible.builtin.command: tailscale status --json
+  changed_when: false
+  register: connected_tailscale_status
+  retries: 30
+  delay: 2
+  until:
+    - connected_tailscale_status.rc == 0
+    - (connected_tailscale_status.stdout | from_json).BackendState == "Running"
+
+- name: Enable Tailscale SSH
+  ansible.builtin.command: tailscale set --ssh
+  changed_when: false
+
+- name: Verify Tailscale
+  ansible.builtin.import_tasks: verify.yml
