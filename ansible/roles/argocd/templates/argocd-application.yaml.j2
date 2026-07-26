@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: {{ resolved_repository_url | quote }}
+    repoURL: {{ prerequisites_resolved_repository_url | quote }}
     targetRevision: {{ repository_revision | quote }}
     path: kubernetes/clusters/homelab
   destination:

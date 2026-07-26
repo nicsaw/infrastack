@@ -2,11 +2,11 @@
 - name: Read final Tailscale status
   ansible.builtin.command: tailscale status --json
   changed_when: false
-  register: final_tailscale_status
+  register: tailscale_final_tailscale_status
 
 - name: Parse final Tailscale status
   ansible.builtin.set_fact:
-    tailscale_status_data: "{{ final_tailscale_status.stdout | from_json }}"
+    tailscale_status_data: "{{ tailscale_final_tailscale_status.stdout | from_json }}"
 
 - name: Resolve the Tailscale DNS name
   ansible.builtin.set_fact:

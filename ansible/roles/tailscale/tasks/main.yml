@@ -34,16 +34,16 @@
   ansible.builtin.command: tailscale status --json
   changed_when: false
   failed_when: false
-  register: initial_tailscale_status
+  register: tailscale_initial_tailscale_status
 
 - name: Determine whether authentication is required
   ansible.builtin.set_fact:
     tailscale_needs_login: >-
       {{
-        initial_tailscale_status.rc != 0
+        tailscale_initial_tailscale_status.rc != 0
         or
         (
-          (initial_tailscale_status.stdout | default('{}') | from_json).BackendState
+          (tailscale_initial_tailscale_status.stdout | default('{}') | from_json).BackendState
           | default('NeedsLogin')
         ) != 'Running'
       }}
@@ -68,12 +68,12 @@
 - name: Wait for the Tailscale backend
   ansible.builtin.command: tailscale status --json
   changed_when: false
-  register: connected_tailscale_status
+  register: tailscale_connected_tailscale_status
   retries: 30
   delay: 2
   until:
-    - connected_tailscale_status.rc == 0
-    - (connected_tailscale_status.stdout | from_json).BackendState == "Running"
+    - tailscale_connected_tailscale_status.rc == 0
+    - (tailscale_connected_tailscale_status.stdout | from_json).BackendState == "Running"
 
 - name: Enable Tailscale SSH
   ansible.builtin.command: tailscale set --ssh

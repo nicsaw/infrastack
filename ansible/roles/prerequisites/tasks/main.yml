@@ -9,12 +9,12 @@
 - name: Read PID 1 process name
   ansible.builtin.command: cat /proc/1/comm
   changed_when: false
-  register: pid_one
+  register: prerequisites_pid_one
 
 - name: Require systemd
   ansible.builtin.assert:
     that:
-      - pid_one.stdout | trim == "systemd"
+      - prerequisites_pid_one.stdout | trim == "systemd"
     fail_msg: "Unsupported host: systemd must run as PID 1."
 
 - name: Install base packages
@@ -39,15 +39,15 @@
       - origin
   become: false
   changed_when: false
-  register: git_origin
+  register: prerequisites_git_origin
   when: repository_url == "auto"
 
 - name: Resolve repository URL
   ansible.builtin.set_fact:
-    resolved_repository_url: >-
+    prerequisites_resolved_repository_url: >-
       {{
         (
-          git_origin.stdout
+          prerequisites_git_origin.stdout
           | regex_replace('^git@github.com:', 'https://github.com/')
           | regex_replace('^ssh://git@github.com/', 'https://github.com/')
         )
@@ -58,7 +58,7 @@
 - name: Require a public HTTPS repository
   ansible.builtin.assert:
     that:
-      - resolved_repository_url is match('^https://')
+      - prerequisites_resolved_repository_url is match('^https://')
     fail_msg: >-
       Argo CD requires a public HTTPS repository URL.
       Set repository_url in config.yml.
@@ -66,15 +66,15 @@
 - name: Check whether K3s is already installed
   ansible.builtin.stat:
     path: /usr/local/bin/k3s
-  register: existing_k3s
+  register: prerequisites_existing_k3s
 
 - name: Read listening TCP ports
   ansible.builtin.command: ss --numeric --listening --tcp
   changed_when: false
-  register: listening_tcp
+  register: prerequisites_listening_tcp
 
 - name: Require free web ports before a new K3s installation
   ansible.builtin.assert:
     that:
-      - existing_k3s.stat.exists or not (listening_tcp.stdout is regex('(?m):(?:80|443)\\s'))
+      - prerequisites_existing_k3s.stat.exists or not (prerequisites_listening_tcp.stdout is regex('(?m):(?:80|443)\\s'))
     fail_msg: "Ports 80 or 443 are already occupied by a non-K3s installation."

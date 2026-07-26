@@ -14,8 +14,8 @@
       - kubectl
       - apply
       - --filename=/tmp/infrastack-argocd-application.yaml
-  register: application_apply
-  changed_when: "'configured' in application_apply.stdout or 'created' in application_apply.stdout"
+  register: argocd_application_apply
+  changed_when: "'configured' in argocd_application_apply.stdout or 'created' in argocd_application_apply.stdout"
 
 - name: Wait for the Argo CD Application
   ansible.builtin.command:
