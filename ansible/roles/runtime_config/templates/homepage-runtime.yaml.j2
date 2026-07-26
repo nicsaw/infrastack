@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage-runtime
+  namespace: default
+  labels:
+    app.kubernetes.io/managed-by: ansible
+data:
+  external-host: {{ tailscale_dns_name | quote }}

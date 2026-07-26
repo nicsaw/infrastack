@@ -27,3 +27,5 @@
   roles:
     - role: prerequisites
     - role: tailscale
+    - role: k3s
+    - role: runtime_config

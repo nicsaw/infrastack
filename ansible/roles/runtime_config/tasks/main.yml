@@ -1,0 +1,20 @@
+---
+- name: Install Homepage runtime configuration
+  ansible.builtin.template:
+    src: homepage-runtime.yaml.j2
+    dest: /var/lib/rancher/k3s/server/manifests/homepage-runtime.yaml
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Wait for Homepage runtime configuration
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - wait
+      - --for=create
+      - configmap/homepage-runtime
+      - --namespace=default
+      - --timeout=60s
+  changed_when: false
