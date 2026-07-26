@@ -70,12 +70,23 @@
       - git
       - -c
       - credential.helper=
+      - -c
+      - http.extraHeader=
+      - -c
+      - http.cookieFile=
       - ls-remote
       - --exit-code
       - "{{ prerequisites_resolved_repository_url }}"
       - "{{ repository_revision }}"
+  args:
+    chdir: /tmp
   environment:
+    GIT_ASKPASS: /bin/false
+    GIT_CONFIG_GLOBAL: /dev/null
+    GIT_CONFIG_NOSYSTEM: "1"
     GIT_TERMINAL_PROMPT: "0"
+    HOME: /tmp/infrastack-git-probe
+    XDG_CONFIG_HOME: /tmp/infrastack-git-probe
   become: false
   changed_when: false
   failed_when: false
