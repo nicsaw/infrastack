@@ -29,3 +29,39 @@ jobs:
 
       - name: Validate Compose configuration
         run: docker compose --env-file .env.example -f compose.yaml config --quiet
+
+  infrastructure:
+    name: Infrastructure configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install validation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ansible-core shellcheck
+          pipx install ansible-lint
+
+      - name: Check shell
+        run: shellcheck bootstrap.sh scripts/*.sh
+
+      - name: Check Ansible syntax
+        run: ansible-playbook --syntax-check ansible/playbooks/homelab.yml
+
+      - name: Lint Ansible
+        run: ansible-lint ansible/playbooks/homelab.yml
+
+      - name: Render Kubernetes resources
+        run: kubectl kustomize kubernetes/clusters/homelab > /tmp/homelab.yaml
+
+      - name: Validate Kubernetes resources
+        run: |
+          docker run --rm --interactive \
+            ghcr.io/yannh/kubeconform:v0.7.0 \
+            -ignore-missing-schemas \
+            -strict \
+            -summary \
+            < /tmp/homelab.yaml
