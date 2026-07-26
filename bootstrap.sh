@@ -9,6 +9,7 @@ if [[ ! -r /etc/os-release ]]; then
   exit 1
 fi
 
+# shellcheck disable=SC1091
 source /etc/os-release
 
 if [[ "${ID:-}" != "ubuntu" || "${VERSION_ID:-}" != "24.04" ]]; then
