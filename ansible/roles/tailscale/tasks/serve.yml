@@ -1,4 +1,39 @@
 ---
+- name: Check whether Tailscale HTTPS certificates are enabled
+  ansible.builtin.set_fact:
+    tailscale_https_certificates_enabled: >-
+      {{ tailscale_dns_name in (tailscale_status_data.CertDomains | default([], true)) }}
+
+- name: Display the Tailscale HTTPS certificate administration URL
+  ansible.builtin.debug:
+    msg: "Enable HTTPS certificates at https://login.tailscale.com/admin/dns"
+  when: not (tailscale_https_certificates_enabled | bool)
+
+- name: Wait for the user to enable Tailscale HTTPS certificates
+  ansible.builtin.pause:
+    prompt: "Enable HTTPS certificates at https://login.tailscale.com/admin/dns, then press Enter"
+  when: not (tailscale_https_certificates_enabled | bool)
+
+- name: Read Tailscale status after enabling HTTPS certificates
+  ansible.builtin.command: tailscale status --json
+  changed_when: false
+  register: tailscale_https_tailscale_status
+  when: not (tailscale_https_certificates_enabled | bool)
+
+- name: Parse Tailscale status after enabling HTTPS certificates
+  ansible.builtin.set_fact:
+    tailscale_status_data: "{{ tailscale_https_tailscale_status.stdout | from_json }}"
+  when: not (tailscale_https_certificates_enabled | bool)
+
+- name: Require Tailscale HTTPS certificate consent
+  ansible.builtin.assert:
+    that:
+      - tailscale_dns_name in (tailscale_status_data.CertDomains | default([], true))
+    fail_msg: >-
+      The Tailscale HTTPS certificate layer is not enabled for {{ tailscale_dns_name }}.
+      Enable HTTPS certificates at https://login.tailscale.com/admin/dns, then re-run this playbook.
+  when: not (tailscale_https_certificates_enabled | bool)
+
 - name: Configure Tailscale Serve
   ansible.builtin.command:
     argv:
