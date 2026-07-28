@@ -15,3 +15,7 @@ spec:
     gatewayClass:
       enabled: true
       name: traefik
+    ports:
+      websecure:
+        expose:
+          default: false
