@@ -12,7 +12,7 @@ Create a fine-grained personal access token for the target repository with:
 Keep the token out of Git. Copy the local configuration and restrict its file permissions:
 
 ```bash
-cp config.example.yml config.yml
+cp config.example.yaml config.yml
 chmod 600 config.yml
 ```
 
