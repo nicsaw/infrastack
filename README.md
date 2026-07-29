@@ -24,10 +24,10 @@ The installer pauses once for Tailscale browser authentication. It is safe to ru
 To override the repository or cluster name:
 
 ```bash
-cp config.example.yaml config.yml
+cp config.example.yaml config.yaml
 ```
 
-Edit `config.yml`, then run `./bootstrap.sh`. The local file is ignored by Git.
+Edit `config.yaml`, then run `./bootstrap.sh`. The local file is ignored by Git.
 
 ### Client requirement
 

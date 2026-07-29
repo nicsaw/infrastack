@@ -7,7 +7,7 @@
 
   vars:
     project_root: "{{ playbook_dir }}/../.."
-    config_file: "{{ playbook_dir }}/../../config.yml"
+    config_file: "{{ playbook_dir }}/../../config.yaml"
     cluster_name: homelab
     repository_url: auto
     repository_revision: main

@@ -14,7 +14,7 @@
           - github_runners_storage_size | length > 0
           - github_runners_token | length > 0
         fail_msg: >-
-          Configure the github_runners_* values in config.yml before enabling the GitHub Actions runner scale set.
+          Configure the github_runners_* values in config.yaml before enabling the GitHub Actions runner scale set.
       no_log: true
 
     - name: Check ARC namespaces

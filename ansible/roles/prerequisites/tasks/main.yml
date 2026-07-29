@@ -62,7 +62,7 @@
       - prerequisites_resolved_repository_url is not match('^https://[^/]*@')
     fail_msg: >-
       Argo CD requires a public HTTPS repository URL without credentials.
-      Set repository_url in config.yml.
+      Set repository_url in config.yaml.
 
 - name: Check the public repository revision # noqa command-instead-of-module
   ansible.builtin.command:
