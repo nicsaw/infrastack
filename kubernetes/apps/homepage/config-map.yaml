@@ -8,11 +8,17 @@ data:
   kubernetes.yaml: |
     mode: cluster
     ingress: false
-    gateway: true
+    gateway: false
   settings.yaml: |
     title: InfraStack
     disableIndexing: true
-  services.yaml: "[]"
+    base: "{{HOMEPAGE_VAR_BASE_URL}}"
+  services.yaml: |
+    - Media:
+        - MeTube:
+            icon: metube.png
+            description: Video downloader
+            href: /metube/
   bookmarks.yaml: "[]"
   widgets.yaml: "[]"
   docker.yaml: ""
