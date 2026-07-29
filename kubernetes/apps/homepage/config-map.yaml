@@ -12,7 +12,6 @@ data:
   settings.yaml: |
     title: InfraStack
     disableIndexing: true
-    base: "{{HOMEPAGE_VAR_BASE_URL}}"
   services.yaml: |
     - Media:
         - MeTube:
