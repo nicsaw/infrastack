@@ -21,7 +21,7 @@ Set the following values in `config.yaml`:
 ```yaml
 github_runners_enabled: true
 github_runners_config_url: https://github.com/nicsaw/spearhead
-github_runners_scale_set_name: homelab-runners
+github_runners_scale_set_name: homelab-k3s-runners
 github_runners_min: 0
 github_runners_max: 3
 github_runners_token: github_pat_REPLACE_ME
@@ -53,7 +53,7 @@ Target the scale set by name and declare a job container. Kubernetes mode reject
 ```yaml
 jobs:
   test:
-    runs-on: homelab-runners
+    runs-on: homelab-k3s-runners
     container:
       image: node:22-bookworm
     steps:
