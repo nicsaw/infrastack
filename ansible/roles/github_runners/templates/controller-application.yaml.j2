@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: actions-runner-controller
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: ghcr.io/actions/actions-runner-controller-charts
+    chart: gha-runner-scale-set-controller
+    targetRevision: {{ github_runners_chart_version | quote }}
+    helm:
+      releaseName: arc
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: arc-systems
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: github-runners
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: ghcr.io/actions/actions-runner-controller-charts
+    chart: gha-runner-scale-set
+    targetRevision: {{ github_runners_chart_version | quote }}
+    helm:
+      releaseName: {{ github_runners_scale_set_name | quote }}
+      values: |
+        githubConfigUrl: {{ github_runners_config_url | quote }}
+        githubConfigSecret: github-runner-auth
+        runnerScaleSetName: {{ github_runners_scale_set_name | quote }}
+        minRunners: {{ github_runners_min | int }}
+        maxRunners: {{ github_runners_max | int }}
+        controllerServiceAccount:
+          namespace: arc-systems
+          name: arc-gha-rs-controller
+        containerMode:
+          type: kubernetes
+          kubernetesModeWorkVolumeClaim:
+            accessModes:
+              - ReadWriteOnce
+            storageClassName: {{ github_runners_storage_class | quote }}
+            resources:
+              requests:
+                storage: {{ github_runners_storage_size | quote }}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: arc-runners
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
