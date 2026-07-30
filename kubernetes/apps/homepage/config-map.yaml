@@ -13,11 +13,17 @@ data:
     title: InfraStack
     disableIndexing: true
   services.yaml: |
+    - Infrastructure:
+      - Argo CD:
+          icon: argocd.png
+          description: GitOps Continuous Delivery
+          href: /argocd/
     - Media:
         - MeTube:
             icon: metube.png
             description: Video downloader
             href: /metube/
+  proxmox.yaml: "{}"
   bookmarks.yaml: "[]"
   widgets.yaml: "[]"
   docker.yaml: ""
