@@ -11,6 +11,8 @@ spec:
       app.kubernetes.io/name: homepage
   template:
     metadata:
+      annotations:
+        infrastack.dev/config-generation: "2"
       labels:
         app.kubernetes.io/name: homepage
     spec:

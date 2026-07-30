@@ -26,6 +26,47 @@
   delay: 10
   until: argocd_apply.rc == 0
 
+- name: Read the Argo CD server path
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - get
+      - configmap/argocd-cmd-params-cm
+      - --namespace=argocd
+      - --output=jsonpath={.data.server\.basehref}{"\n"}{.data.server\.rootpath}{"\n"}{.data.server\.insecure}
+  changed_when: false
+  register: argocd_server_path
+
+- name: Configure the Argo CD server path
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - patch
+      - configmap/argocd-cmd-params-cm
+      - --namespace=argocd
+      - --type=merge
+      - --patch={"data":{"server.basehref":"/argocd","server.rootpath":"/argocd","server.insecure":"true"}}
+  changed_when: true
+  when: argocd_server_path.stdout_lines != ["/argocd", "/argocd", "true"]
+  notify: Restart the Argo CD server
+
+- name: Apply Argo CD server changes
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait for the Argo CD server rollout
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - rollout
+      - status
+      - deployment/argocd-server
+      - --namespace=argocd
+      - --timeout=5m
+  changed_when: false
+
 - name: Wait for Argo CD deployments
   ansible.builtin.command:
     argv:
