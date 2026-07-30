@@ -13,6 +13,12 @@ data:
     title: InfraStack
     disableIndexing: true
   services.yaml: |
+    - Platform:
+        - Argo CD:
+            icon: argocd.png
+            description: Continuous delivery
+            href: /argocd/
+
     - Media:
         - MeTube:
             icon: metube.png

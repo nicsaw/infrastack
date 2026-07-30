@@ -1,0 +1,11 @@
+---
+- name: Restart the Argo CD server
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - rollout
+      - restart
+      - deployment/argocd-server
+      - --namespace=argocd
+  changed_when: true
