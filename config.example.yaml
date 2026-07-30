@@ -9,3 +9,6 @@ github_runners_scale_set_name: homelab-k3s-runners
 github_runners_min: 0
 github_runners_max: 5
 github_runners_token: "TODO_github_pat"
+
+# pgAdmin initial administrator account.
+pgadmin_default_email: admin@infrastack.local

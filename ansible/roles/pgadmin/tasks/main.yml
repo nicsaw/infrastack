@@ -1,0 +1,91 @@
+---
+- name: Validate pgAdmin configuration
+  ansible.builtin.assert:
+    that:
+      - pgadmin_default_email is match('^[^@\s]+@[^@\s]+[.][^@\s]+$')
+    fail_msg: "Set pgadmin_default_email to a valid email address in config.yaml."
+
+- name: Check for the pgAdmin authentication secret
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - get
+      - secret/pgadmin-auth
+      - --namespace=default
+  changed_when: false
+  failed_when: false
+  register: pgadmin_auth_secret
+
+- name: Create the pgAdmin authentication secret
+  when: pgadmin_auth_secret.rc != 0
+  block:
+    - name: Generate the pgAdmin initial password
+      ansible.builtin.command:
+        argv:
+          - python3
+          - -c
+          - "import secrets; print(secrets.token_urlsafe(32))"
+      changed_when: false
+      register: pgadmin_generated_password
+      no_log: true
+
+    - name: Create a temporary pgAdmin secret directory
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: -pgadmin-auth
+      register: pgadmin_secret_directory
+      no_log: true
+
+    - name: Write the pgAdmin initial email
+      ansible.builtin.copy:
+        content: "{{ pgadmin_default_email }}"
+        dest: "{{ pgadmin_secret_directory.path }}/email"
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+
+    - name: Write the pgAdmin initial password
+      ansible.builtin.copy:
+        content: "{{ pgadmin_generated_password.stdout }}"
+        dest: "{{ pgadmin_secret_directory.path }}/password"
+        owner: root
+        group: root
+        mode: "0600"
+      no_log: true
+
+    - name: Install the pgAdmin authentication secret
+      ansible.builtin.shell: |
+        set -o pipefail
+        k3s kubectl create secret generic pgadmin-auth \
+          --namespace=default \
+          --from-file=PGADMIN_DEFAULT_EMAIL={{ (pgadmin_secret_directory.path ~ '/email') | quote }} \
+          --from-file=PGADMIN_DEFAULT_PASSWORD={{ (pgadmin_secret_directory.path ~ '/password') | quote }} \
+          --dry-run=client \
+          --output=yaml \
+          | k3s kubectl apply --filename=-
+      args:
+        executable: /bin/bash
+      register: pgadmin_secret_apply
+      changed_when: >-
+        'created' in pgadmin_secret_apply.stdout or
+        'configured' in pgadmin_secret_apply.stdout
+      no_log: true
+  always:
+    - name: Remove the temporary pgAdmin secret directory
+      ansible.builtin.file:
+        path: "{{ pgadmin_secret_directory.path | default('') }}"
+        state: absent
+      when: pgadmin_secret_directory.path | default('') | length > 0
+      no_log: true
+
+- name: Display pgAdmin credential commands
+  ansible.builtin.debug:
+    msg:
+      - >-
+        Email: sudo kubectl get secret pgadmin-auth --namespace=default
+        --output=jsonpath='{.data.PGADMIN_DEFAULT_EMAIL}' | base64 --decode; echo
+      - >-
+        Password: sudo kubectl get secret pgadmin-auth --namespace=default
+        --output=jsonpath='{.data.PGADMIN_DEFAULT_PASSWORD}' | base64 --decode; echo

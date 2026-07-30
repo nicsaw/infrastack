@@ -18,6 +18,11 @@ data:
           icon: argocd.png
           description: GitOps Continuous Delivery
           href: /argocd/
+    - Data:
+      - pgAdmin:
+          icon: pgadmin.png
+          description: PostgreSQL administration
+          href: /pgadmin/
     - Media:
         - MeTube:
             icon: metube.png
