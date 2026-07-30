@@ -30,6 +30,7 @@
     - role: k3s
     - role: argocd
     - role: github_runners
+    - role: pgadmin
     - role: runtime_config
 
   tasks:
