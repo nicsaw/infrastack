@@ -89,9 +89,10 @@
       - rollout
       - status
       - statefulset/n8n-postgres
-      - --namespace=n8n
+      - "--namespace={{ n8n_namespace }}"
       - --timeout=10m
   changed_when: false
+  when: n8n_enabled | bool
 
 - name: Verify n8n deployment
   ansible.builtin.command:
@@ -101,9 +102,10 @@
       - rollout
       - status
       - deployment/n8n
-      - --namespace=n8n
+      - "--namespace={{ n8n_namespace }}"
       - --timeout=10m
   changed_when: false
+  when: n8n_enabled | bool
 
 - name: Verify local Homepage
   ansible.builtin.uri:
@@ -150,16 +152,33 @@
   delay: 5
   until: verify_local_crawl4ai.status == 200
 
-- name: Verify local n8n
+- name: Verify local n8n route
   ansible.builtin.uri:
     url: http://127.0.0.1/healthz
     headers:
-      Host: n8n.nicholassaw.com
+      Host: "{{ n8n_hostname }}"
     status_code: 200
   register: verify_local_n8n
   retries: 120
   delay: 5
   until: verify_local_n8n.status == 200
+  when:
+    - n8n_enabled | bool
+    - n8n_route_enabled | bool
+
+- name: Verify external n8n route
+  ansible.builtin.uri:
+    url: "{{ n8n_protocol }}://{{ n8n_hostname }}/healthz"
+    status_code: 200
+    validate_certs: true
+  register: verify_external_n8n
+  retries: 30
+  delay: 5
+  until: verify_external_n8n.status == 200
+  when:
+    - n8n_enabled | bool
+    - n8n_route_enabled | bool
+    - n8n_external_verify_enabled | bool
 
 - name: Verify private Homepage
   ansible.builtin.uri:
@@ -219,4 +238,10 @@
       - "pgAdmin: https://{{ tailscale_dns_name }}/pgadmin/"
       - "SearXNG: https://{{ tailscale_dns_name }}/searxng/"
       - "Crawl4AI API: https://{{ tailscale_dns_name }}/crawl4ai/"
-      - "n8n: https://n8n.nicholassaw.com/"
+
+- name: Print the n8n access URL
+  ansible.builtin.debug:
+    msg: "n8n: {{ n8n_protocol }}://{{ n8n_hostname }}/"
+  when:
+    - n8n_enabled | bool
+    - n8n_route_enabled | bool
