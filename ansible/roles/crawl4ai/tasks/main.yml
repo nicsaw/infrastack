@@ -1,0 +1,74 @@
+---
+- name: Check for the Crawl4AI API token secret
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - get
+      - secret/crawl4ai-auth
+      - --namespace=default
+  changed_when: false
+  failed_when: false
+  register: crawl4ai_auth_secret
+
+- name: Create the Crawl4AI API token secret
+  when: crawl4ai_auth_secret.rc != 0
+  block:
+    - name: Generate the Crawl4AI API token
+      ansible.builtin.command:
+        argv:
+          - python3
+          - -c
+          - "import secrets; print(secrets.token_hex(32))"
+      changed_when: false
+      register: crawl4ai_generated_token
+      no_log: true
+
+    - name: Create a temporary Crawl4AI secret directory
+      ansible.builtin.tempfile:
+        state: directory
+        suffix: -crawl4ai-auth
+      changed_when: false
+      register: crawl4ai_secret_directory
+      no_log: true
+
+    - name: Write the Crawl4AI API token
+      ansible.builtin.copy:
+        content: "{{ crawl4ai_generated_token.stdout }}"
+        dest: "{{ crawl4ai_secret_directory.path }}/api-token"
+        owner: root
+        group: root
+        mode: "0600"
+      changed_when: false
+      no_log: true
+
+    - name: Install the Crawl4AI API token secret
+      ansible.builtin.shell: |
+        set -o pipefail
+        k3s kubectl create secret generic crawl4ai-auth \
+          --namespace=default \
+          --from-file=CRAWL4AI_API_TOKEN={{ (crawl4ai_secret_directory.path ~ '/api-token') | quote }} \
+          --dry-run=client \
+          --output=yaml \
+          | k3s kubectl apply --filename=-
+      args:
+        executable: /bin/bash
+      register: crawl4ai_secret_apply
+      changed_when: >-
+        'created' in crawl4ai_secret_apply.stdout or
+        'configured' in crawl4ai_secret_apply.stdout
+      no_log: true
+  always:
+    - name: Remove the temporary Crawl4AI secret directory
+      ansible.builtin.file:
+        path: "{{ crawl4ai_secret_directory.path | default('') }}"
+        state: absent
+      when: crawl4ai_secret_directory.path | default('') | length > 0
+      changed_when: false
+      no_log: true
+
+- name: Display the Crawl4AI API token command
+  ansible.builtin.debug:
+    msg: >-
+      Token: sudo kubectl get secret crawl4ai-auth --namespace=default
+      --output=jsonpath='{.data.CRAWL4AI_API_TOKEN}' | base64 --decode; echo
