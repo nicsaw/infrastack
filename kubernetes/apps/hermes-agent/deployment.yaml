@@ -1,0 +1,177 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hermes-agent
+  labels:
+    app.kubernetes.io/name: hermes-agent
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hermes-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hermes-agent
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 90
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: hermes-agent
+          image: nousresearch/hermes-agent
+          imagePullPolicy: IfNotPresent
+          args:
+            - gateway
+            - run
+          envFrom:
+            - secretRef:
+                name: hermes-agent-env
+          env:
+            - name: API_SERVER_ENABLED
+              value: "true"
+            - name: API_SERVER_HOST
+              value: "0.0.0.0"
+            - name: API_SERVER_PORT
+              value: "8642"
+            - name: HERMES_DASHBOARD
+              value: "1"
+            - name: HERMES_DASHBOARD_HOST
+              value: "0.0.0.0"
+            - name: HERMES_DASHBOARD_PUBLIC_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: hermes-agent-runtime
+                  key: dashboard-public-url
+            - name: CAMOFOX_URL
+              value: http://127.0.0.1:9377
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: hermes-agent-runtime
+                  key: timezone
+          ports:
+            - name: api
+              containerPort: 8642
+              protocol: TCP
+            - name: dashboard
+              containerPort: 9119
+              protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /api/status
+              port: dashboard
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /api/status
+              port: dashboard
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /api/status
+              port: dashboard
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: data
+              mountPath: /opt/data
+        - name: camofox
+          image: ghcr.io/redf0x1/camofox-browser
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: CAMOFOX_PORT
+              value: "9377"
+            - name: CAMOFOX_CRASH_REPORT_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: hermes-agent-runtime
+                  key: camofox-crash-report-enabled
+            - name: ENABLE_VNC
+              value: "1"
+            - name: VNC_BIND
+              value: "0.0.0.0"
+            - name: VNC_RESOLUTION
+              valueFrom:
+                configMapKeyRef:
+                  name: hermes-agent-runtime
+                  key: camofox-vnc-resolution
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: hermes-agent-runtime
+                  key: timezone
+          ports:
+            - name: camofox
+              containerPort: 9377
+              protocol: TCP
+            - name: novnc
+              containerPort: 6080
+              protocol: TCP
+            - name: vnc
+              containerPort: 5900
+              protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /health
+              port: camofox
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: camofox
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: camofox
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: camofox-data
+              mountPath: /root/.camofox
+            - name: shared-memory
+              mountPath: /dev/shm
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: hermes-agent-data
+        - name: camofox-data
+          persistentVolumeClaim:
+            claimName: hermes-agent-camofox
+        - name: shared-memory
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
