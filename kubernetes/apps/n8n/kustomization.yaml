@@ -6,5 +6,3 @@ resources:
   - postgres-stateful-set.yaml
   - deployment.yaml
   - service.yaml
-  - http-route.yaml
-  - reference-grant.yaml
