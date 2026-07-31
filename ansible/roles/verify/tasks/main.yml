@@ -81,6 +81,19 @@
       - --timeout=15m
   changed_when: false
 
+- name: Verify Hermes Agent deployment
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - rollout
+      - status
+      - deployment/hermes-agent
+      - "--namespace={{ hermes_agent_namespace }}"
+      - --timeout=15m
+  changed_when: false
+  when: hermes_agent_enabled | bool
+
 - name: Verify local Homepage
   ansible.builtin.uri:
     url: http://127.0.0.1/
@@ -125,6 +138,20 @@
   retries: 120
   delay: 5
   until: verify_local_crawl4ai.status == 200
+
+- name: Verify local Hermes Agent dashboard
+  ansible.builtin.uri:
+    url: "http://127.0.0.1{{ hermes_agent_dashboard_path }}/api/status"
+    headers:
+      Host: "{{ hermes_agent_resolved_route_hostname }}"
+    status_code: 200
+  register: verify_local_hermes_agent
+  retries: 120
+  delay: 5
+  until: verify_local_hermes_agent.status == 200
+  when:
+    - hermes_agent_enabled | bool
+    - hermes_agent_route_enabled | bool
 
 - name: Verify private Homepage
   ansible.builtin.uri:
@@ -176,6 +203,27 @@
   delay: 5
   until: verify_private_crawl4ai.status == 200
 
+- name: Verify private Hermes Agent dashboard
+  ansible.builtin.uri:
+    url: >-
+      {{
+        hermes_agent_route_scheme
+        ~ '://'
+        ~ hermes_agent_resolved_route_hostname
+        ~ hermes_agent_dashboard_path
+        ~ '/api/status'
+      }}
+    status_code: 200
+    validate_certs: "{{ hermes_agent_route_scheme == 'https' }}"
+  register: verify_private_hermes_agent
+  retries: 120
+  delay: 5
+  until: verify_private_hermes_agent.status == 200
+  when:
+    - hermes_agent_enabled | bool
+    - hermes_agent_route_enabled | bool
+    - hermes_agent_external_verify_enabled | bool
+
 - name: Print access URLs
   ansible.builtin.debug:
     msg:
@@ -184,3 +232,24 @@
       - "pgAdmin: https://{{ tailscale_dns_name }}/pgadmin/"
       - "SearXNG: https://{{ tailscale_dns_name }}/searxng/"
       - "Crawl4AI API: https://{{ tailscale_dns_name }}/crawl4ai/"
+
+- name: Print Hermes Agent access URLs
+  ansible.builtin.debug:
+    msg:
+      - >-
+        Hermes dashboard: {{
+          hermes_agent_resolved_dashboard_url
+          if hermes_agent_route_enabled | bool
+          else 'internal only'
+        }}
+      - >-
+        Hermes API: {{
+          hermes_agent_route_scheme
+          ~ '://'
+          ~ hermes_agent_resolved_route_hostname
+          ~ hermes_agent_api_path
+          ~ '/'
+          if hermes_agent_route_enabled | bool
+          else 'internal only'
+        }}
+  when: hermes_agent_enabled | bool
