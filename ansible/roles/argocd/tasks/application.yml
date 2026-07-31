@@ -17,7 +17,7 @@
   register: argocd_application_apply
   changed_when: "'configured' in argocd_application_apply.stdout or 'created' in argocd_application_apply.stdout"
 
-- name: Wait for the Argo CD Application
+- name: Wait for the Argo CD Application sync
   ansible.builtin.command:
     argv:
       - k3s
@@ -33,4 +33,7 @@
   delay: 5
   until:
     - (argocd_application.stdout | from_json).status.sync.status | default("") == "Synced"
-    - (argocd_application.stdout | from_json).status.health.status | default("") == "Healthy"
+    - >-
+      (argocd_application.stdout | from_json).status.sync.revision | default("")
+      ==
+      (prerequisites_repository_revision.stdout.split() | first)
