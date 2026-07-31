@@ -69,6 +69,18 @@
       - --timeout=5m
   changed_when: false
 
+- name: Verify Crawl4AI deployment
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - rollout
+      - status
+      - deployment/crawl4ai
+      - --namespace=default
+      - --timeout=15m
+  changed_when: false
+
 - name: Verify local Homepage
   ansible.builtin.uri:
     url: http://127.0.0.1/
@@ -104,6 +116,15 @@
   retries: 30
   delay: 5
   until: verify_local_searxng.status == 200
+
+- name: Verify local Crawl4AI
+  ansible.builtin.uri:
+    url: http://127.0.0.1/crawl4ai/health
+    status_code: 200
+  register: verify_local_crawl4ai
+  retries: 120
+  delay: 5
+  until: verify_local_crawl4ai.status == 200
 
 - name: Verify private Homepage
   ansible.builtin.uri:
@@ -145,6 +166,16 @@
   delay: 5
   until: verify_private_searxng.status == 200
 
+- name: Verify private Crawl4AI
+  ansible.builtin.uri:
+    url: "https://{{ tailscale_dns_name }}/crawl4ai/health"
+    status_code: 200
+    validate_certs: true
+  register: verify_private_crawl4ai
+  retries: 120
+  delay: 5
+  until: verify_private_crawl4ai.status == 200
+
 - name: Print access URLs
   ansible.builtin.debug:
     msg:
@@ -152,3 +183,4 @@
       - "MeTube: https://{{ tailscale_dns_name }}/metube/"
       - "pgAdmin: https://{{ tailscale_dns_name }}/pgadmin/"
       - "SearXNG: https://{{ tailscale_dns_name }}/searxng/"
+      - "Crawl4AI API: https://{{ tailscale_dns_name }}/crawl4ai/"

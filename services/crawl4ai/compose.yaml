@@ -1,16 +1,21 @@
 services:
   crawl4ai:
-    image: unclecode/crawl4ai
+    profiles: ["legacy"]
+    image: unclecode/crawl4ai:0.9.2
     container_name: crawl4ai
     restart: unless-stopped
-    volumes:
-      - /dev/shm:/dev/shm
+    shm_size: "1gb"
     ports:
       - "11235:11235"
+    environment:
+      CRAWL4AI_API_TOKEN: ${CRAWL4AI_API_TOKEN}
+      CRAWL4AI_HOOKS_ENABLED: "false"
+      CRAWL4AI_EXECUTE_JS_ENABLED: "false"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:11235/health"]
       interval: 30s
       timeout: 10s
+      start_period: 40s
       retries: 3
     ulimits:
       nofile:

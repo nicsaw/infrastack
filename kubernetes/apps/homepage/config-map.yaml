@@ -18,6 +18,11 @@ data:
           icon: argocd.png
           description: GitOps Continuous Delivery
           href: /argocd/
+    - AI:
+        - Crawl4AI:
+            icon: mdi-spider-web
+            description: LLM-ready web crawling API
+            href: /crawl4ai
     - Data:
       - pgAdmin:
           icon: pgadmin.png
