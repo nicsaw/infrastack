@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: n8n
-  namespace: n8n
   labels:
     app.kubernetes.io/name: n8n
 spec:
@@ -33,10 +32,21 @@ spec:
             - |
               until pg_isready \
                 --host=n8n-postgres \
-                --username=n8n \
-                --dbname=n8n; do
+                --username="$POSTGRES_USER" \
+                --dbname="$POSTGRES_DB"; do
                 sleep 2
               done
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: n8n-runtime
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: n8n-runtime
+                  key: POSTGRES_USER
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -51,19 +61,10 @@ spec:
         - name: n8n
           image: docker.n8n.io/n8nio/n8n:2.30.5
           imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: n8n-runtime
           env:
-            - name: N8N_HOST
-              value: n8n.nicholassaw.com
-            - name: N8N_PORT
-              value: "5678"
-            - name: N8N_PROTOCOL
-              value: https
-            - name: N8N_EDITOR_BASE_URL
-              value: https://n8n.nicholassaw.com
-            - name: N8N_WEBHOOK_URL
-              value: https://n8n.nicholassaw.com/
-            - name: N8N_PROXY_HOPS
-              value: "2"
             - name: N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS
               value: "true"
             - name: N8N_RESTRICT_FILE_ACCESS_TO
@@ -72,20 +73,8 @@ spec:
               value: "false"
             - name: NODE_ENV
               value: production
-            - name: GENERIC_TIMEZONE
-              value: Australia/Sydney
-            - name: TZ
-              value: Australia/Sydney
             - name: DB_TYPE
               value: postgresdb
-            - name: DB_POSTGRESDB_HOST
-              value: n8n-postgres.n8n.svc.cluster.local
-            - name: DB_POSTGRESDB_PORT
-              value: "5432"
-            - name: DB_POSTGRESDB_DATABASE
-              value: n8n
-            - name: DB_POSTGRESDB_USER
-              value: n8n
             - name: DB_POSTGRESDB_SCHEMA
               value: public
             - name: DB_POSTGRESDB_PASSWORD
