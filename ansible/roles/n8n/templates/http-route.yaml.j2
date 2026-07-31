@@ -1,0 +1,23 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: n8n
+  namespace: {{ n8n_gateway_namespace }}
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/managed-by: ansible
+spec:
+  parentRefs:
+    - name: {{ n8n_gateway_name }}
+      namespace: {{ n8n_gateway_namespace }}
+  hostnames:
+    - {{ n8n_hostname | quote }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: n8n
+          namespace: {{ n8n_namespace }}
+          port: 5678
