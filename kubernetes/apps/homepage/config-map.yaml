@@ -18,11 +18,6 @@ data:
           icon: argocd.png
           description: GitOps Continuous Delivery
           href: /argocd/
-    - Automation:
-        - n8n:
-            icon: n8n.png
-            description: Workflow automation
-            href: https://n8n.nicholassaw.com/
     - AI:
         - Crawl4AI:
             icon: mdi-spider-web
