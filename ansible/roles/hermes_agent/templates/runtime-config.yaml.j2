@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hermes-agent-runtime
+  namespace: {{ hermes_agent_namespace }}
+  labels:
+    app.kubernetes.io/name: hermes-agent
+    app.kubernetes.io/managed-by: ansible
+data:
+  timezone: {{ hermes_agent_timezone | quote }}
+  dashboard-public-url: {{ hermes_agent_resolved_dashboard_url | quote }}
+  camofox-crash-report-enabled: {{ (hermes_agent_camofox_crash_report_enabled | bool) | ternary('true', 'false') | quote }}
+  camofox-vnc-resolution: {{ hermes_agent_camofox_vnc_resolution | quote }}
