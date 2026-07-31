@@ -1,0 +1,32 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: searxng
+spec:
+  parentRefs:
+    - name: homelab
+  rules:
+    - matches:
+        - path:
+            type: Exact
+            value: /searxng
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /searxng/
+            statusCode: 302
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /searxng/
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+      backendRefs:
+        - name: searxng
+          port: 8080
