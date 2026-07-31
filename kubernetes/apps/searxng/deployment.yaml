@@ -19,7 +19,7 @@ spec:
       automountServiceAccountToken: false
       initContainers:
         - name: render-config
-          image: ghcr.io/searxng/searxng:2026.7.26-b060c780d
+          image: ghcr.io/searxng/searxng
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
