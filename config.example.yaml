@@ -12,3 +12,7 @@ github_runners_token: "TODO_github_pat"
 
 # pgAdmin initial administrator account.
 pgadmin_default_email: admin@infrastack.local
+
+# Optional - use the existing key before migrating n8n data.
+# Leave empty for a fresh installation.
+n8n_encryption_key: ""

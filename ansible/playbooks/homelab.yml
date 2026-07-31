@@ -32,6 +32,7 @@
     - role: github_runners
     - role: pgadmin
     - role: crawl4ai
+    - role: n8n
     - role: runtime_config
 
   tasks:
