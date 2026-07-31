@@ -60,11 +60,3 @@ sudo kubectl port-forward service/crawl4ai 11235:11235
 ```
 
 Then open `http://localhost:11235/playground`.
-
-## Legacy Compose service
-
-The old Compose service remains available through the `legacy` profile:
-
-```bash
-docker compose --profile legacy up -d crawl4ai
-```
