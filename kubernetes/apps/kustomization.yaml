@@ -4,6 +4,5 @@ resources:
   - crawl4ai
   - homepage
   - metube
-  - n8n
   - pgadmin
   - searxng
