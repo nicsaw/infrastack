@@ -57,6 +57,18 @@
       - --timeout=5m
   changed_when: false
 
+- name: Verify SearXNG deployment
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - rollout
+      - status
+      - deployment/searxng
+      - --namespace=default
+      - --timeout=5m
+  changed_when: false
+
 - name: Verify local Homepage
   ansible.builtin.uri:
     url: http://127.0.0.1/
@@ -83,6 +95,15 @@
   retries: 30
   delay: 5
   until: verify_local_pgadmin.status == 200
+
+- name: Verify local SearXNG
+  ansible.builtin.uri:
+    url: http://127.0.0.1/searxng/
+    status_code: 200
+  register: verify_local_searxng
+  retries: 30
+  delay: 5
+  until: verify_local_searxng.status == 200
 
 - name: Verify private Homepage
   ansible.builtin.uri:
@@ -114,9 +135,20 @@
   delay: 5
   until: verify_private_pgadmin.status == 200
 
+- name: Verify private SearXNG
+  ansible.builtin.uri:
+    url: "https://{{ tailscale_dns_name }}/searxng/"
+    status_code: 200
+    validate_certs: true
+  register: verify_private_searxng
+  retries: 30
+  delay: 5
+  until: verify_private_searxng.status == 200
+
 - name: Print access URLs
   ansible.builtin.debug:
     msg:
       - "Homepage: https://{{ tailscale_dns_name }}/"
       - "MeTube: https://{{ tailscale_dns_name }}/metube/"
       - "pgAdmin: https://{{ tailscale_dns_name }}/pgadmin/"
+      - "SearXNG: https://{{ tailscale_dns_name }}/searxng/"

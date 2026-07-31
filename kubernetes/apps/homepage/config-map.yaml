@@ -23,6 +23,11 @@ data:
           icon: pgadmin.png
           description: PostgreSQL administration
           href: /pgadmin/
+    - Search:
+        - SearXNG:
+            icon: searxng.png
+            description: Private metasearch
+            href: /searxng/
     - Media:
         - MeTube:
             icon: metube.png

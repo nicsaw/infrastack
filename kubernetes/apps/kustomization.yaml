@@ -4,3 +4,4 @@ resources:
   - homepage
   - metube
   - pgadmin
+  - searxng
