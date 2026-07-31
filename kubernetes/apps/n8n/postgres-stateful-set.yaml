@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: n8n-postgres
-  namespace: n8n
   labels:
     app.kubernetes.io/name: n8n-postgres
 spec:
@@ -30,9 +29,15 @@ spec:
           imagePullPolicy: IfNotPresent
           env:
             - name: POSTGRES_DB
-              value: n8n
+              valueFrom:
+                configMapKeyRef:
+                  name: n8n-runtime
+                  key: POSTGRES_DB
             - name: POSTGRES_USER
-              value: n8n
+              valueFrom:
+                configMapKeyRef:
+                  name: n8n-runtime
+                  key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -43,9 +48,15 @@ spec:
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
             - name: TZ
-              value: Australia/Sydney
+              valueFrom:
+                configMapKeyRef:
+                  name: n8n-runtime
+                  key: TZ
             - name: PGTZ
-              value: Australia/Sydney
+              valueFrom:
+                configMapKeyRef:
+                  name: n8n-runtime
+                  key: PGTZ
           ports:
             - name: postgres
               containerPort: 5432
