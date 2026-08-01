@@ -89,7 +89,7 @@
       - rollout
       - status
       - deployment/hermes-agent
-      - "--namespace={{ hermes_agent_namespace }}"
+      - --namespace=hermes-agent
       - --timeout=15m
   changed_when: false
   when: hermes_agent_enabled | bool
@@ -141,17 +141,15 @@
 
 - name: Verify local Hermes Agent dashboard
   ansible.builtin.uri:
-    url: "http://127.0.0.1{{ hermes_agent_dashboard_path }}/api/status"
+    url: http://127.0.0.1/hermes/api/status
     headers:
-      Host: "{{ hermes_agent_resolved_route_hostname }}"
+      Host: "{{ tailscale_dns_name }}"
     status_code: 200
   register: verify_local_hermes_agent
   retries: 120
   delay: 5
   until: verify_local_hermes_agent.status == 200
-  when:
-    - hermes_agent_enabled | bool
-    - hermes_agent_route_enabled | bool
+  when: hermes_agent_enabled | bool
 
 - name: Verify private Homepage
   ansible.builtin.uri:
@@ -205,24 +203,14 @@
 
 - name: Verify private Hermes Agent dashboard
   ansible.builtin.uri:
-    url: >-
-      {{
-        hermes_agent_route_scheme
-        ~ '://'
-        ~ hermes_agent_resolved_route_hostname
-        ~ hermes_agent_dashboard_path
-        ~ '/api/status'
-      }}
+    url: "https://{{ tailscale_dns_name }}/hermes/api/status"
     status_code: 200
-    validate_certs: "{{ hermes_agent_route_scheme == 'https' }}"
+    validate_certs: true
   register: verify_private_hermes_agent
   retries: 120
   delay: 5
   until: verify_private_hermes_agent.status == 200
-  when:
-    - hermes_agent_enabled | bool
-    - hermes_agent_route_enabled | bool
-    - hermes_agent_external_verify_enabled | bool
+  when: hermes_agent_enabled | bool
 
 - name: Print access URLs
   ansible.builtin.debug:
@@ -236,20 +224,6 @@
 - name: Print Hermes Agent access URLs
   ansible.builtin.debug:
     msg:
-      - >-
-        Hermes dashboard: {{
-          hermes_agent_resolved_dashboard_url
-          if hermes_agent_route_enabled | bool
-          else 'internal only'
-        }}
-      - >-
-        Hermes API: {{
-          hermes_agent_route_scheme
-          ~ '://'
-          ~ hermes_agent_resolved_route_hostname
-          ~ hermes_agent_api_path
-          ~ '/'
-          if hermes_agent_route_enabled | bool
-          else 'internal only'
-        }}
+      - "Hermes dashboard: https://{{ tailscale_dns_name }}/hermes/"
+      - "Hermes API: https://{{ tailscale_dns_name }}/hermes-api/"
   when: hermes_agent_enabled | bool

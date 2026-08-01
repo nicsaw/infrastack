@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ hermes_agent_application_name }}
+  name: hermes-agent
   namespace: argocd
   labels:
     app.kubernetes.io/name: hermes-agent
@@ -13,10 +13,7 @@ spec:
     targetRevision: {{ repository_revision | quote }}
     path: kubernetes/apps/hermes-agent
     kustomize:
-      namespace: {{ hermes_agent_namespace }}
-      images:
-        - {{ ('nousresearch/hermes-agent=' ~ hermes_agent_image_repository ~ ':' ~ hermes_agent_image_tag) | quote }}
-        - {{ ('ghcr.io/redf0x1/camofox-browser=' ~ hermes_agent_camofox_image_repository ~ ':' ~ hermes_agent_camofox_image_tag) | quote }}
+      namespace: hermes-agent
       patches:
         - target:
             kind: PersistentVolumeClaim
@@ -72,7 +69,7 @@ spec:
               value: {{ hermes_agent_shared_memory_size | to_json }}
   destination:
     server: https://kubernetes.default.svc
-    namespace: {{ hermes_agent_namespace }}
+    namespace: hermes-agent
   syncPolicy:
     automated:
       prune: true

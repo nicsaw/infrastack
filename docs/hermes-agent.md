@@ -10,14 +10,16 @@ Add the following to the ignored `config.yaml`:
 
 ```yaml
 hermes_agent_enabled: true
+```
 
-# Optional private routes through the existing Traefik Gateway.
-hermes_agent_route_enabled: true
-hermes_agent_dashboard_path: /hermes
-hermes_agent_api_path: /hermes-api
+Optional capacity and host-specific overrides remain available:
 
-# Provider and messaging credentials are configured after login through the
-# Hermes dashboard and stored on the persistent /opt/data volume.
+```yaml
+hermes_agent_timezone: Australia/Sydney
+hermes_agent_storage_class: local-path
+hermes_agent_data_storage_size: 5Gi
+hermes_agent_camofox_storage_size: 2Gi
+hermes_agent_shared_memory_size: 1Gi
 ```
 
 Run:
@@ -28,22 +30,17 @@ Run:
 
 InfraStack creates:
 
-- a dedicated `hermes-agent` namespace;
-- an Argo CD Application;
+- the fixed `hermes-agent` namespace and Argo CD Application;
 - one Pod containing Hermes Agent and Camofox;
 - persistent volumes for `/opt/data` and `/root/.camofox`;
 - generated API and dashboard credentials;
-- optional `/hermes/` and `/hermes-api/` Gateway API routes.
+- private `/hermes/` and `/hermes-api/` routes through the existing `homelab` Traefik Gateway.
 
 ## Credentials
 
-```bash
-sudo kubectl get secret hermes-agent-env \
-  --namespace=hermes-agent \
-  --output=jsonpath='{.data.HERMES_DASHBOARD_BASIC_AUTH_USERNAME}' \
-  | base64 --decode
-echo
+The dashboard username is always `admin`.
 
+```bash
 sudo kubectl get secret hermes-agent-env \
   --namespace=hermes-agent \
   --output=jsonpath='{.data.HERMES_DASHBOARD_BASIC_AUTH_PASSWORD}' \
@@ -57,7 +54,7 @@ sudo kubectl get secret hermes-agent-env \
 echo
 ```
 
-With the default routing settings, open:
+Open:
 
 ```text
 https://<TAILSCALE_HOSTNAME>/hermes/
@@ -86,7 +83,7 @@ http://hermes-agent.hermes-agent.svc.cluster.local:8642
 
 The dashboard writes Hermes configuration, API keys, sessions, skills, memories, logs and plugins beneath `/opt/data`, which is backed by a persistent volume. Provider and messaging credentials are configured from the dashboard after the first login rather than stored in InfraStack configuration or committed to Git.
 
-Do not expose the dashboard directly to the public internet with basic authentication. The default route is intended for the existing private Tailscale access path.
+Do not expose the dashboard directly to the public internet with basic authentication. The route is intended for the existing private Tailscale access path.
 
 ## Observe Camofox
 

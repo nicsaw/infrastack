@@ -2,40 +2,36 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: hermes-agent
-  namespace: {{ hermes_agent_gateway_namespace }}
+  namespace: default
   labels:
     app.kubernetes.io/name: hermes-agent
     app.kubernetes.io/managed-by: ansible
 spec:
   parentRefs:
-    - name: {{ hermes_agent_gateway_name }}
-      namespace: {{ hermes_agent_gateway_namespace }}
-{% if hermes_agent_route_hostname | length > 0 %}
-  hostnames:
-    - {{ hermes_agent_route_hostname | quote }}
-{% endif %}
+    - name: homelab
+      namespace: default
   rules:
     - matches:
         - path:
             type: Exact
-            value: {{ hermes_agent_dashboard_path | quote }}
+            value: /hermes
       filters:
         - type: RequestRedirect
           requestRedirect:
             path:
               type: ReplaceFullPath
-              replaceFullPath: {{ (hermes_agent_dashboard_path ~ '/') | quote }}
+              replaceFullPath: /hermes/
             statusCode: 302
     - matches:
         - path:
             type: PathPrefix
-            value: {{ (hermes_agent_dashboard_path ~ '/') | quote }}
+            value: /hermes/
       filters:
         - type: RequestHeaderModifier
           requestHeaderModifier:
             set:
               - name: X-Forwarded-Prefix
-                value: {{ hermes_agent_dashboard_path | quote }}
+                value: /hermes
         - type: URLRewrite
           urlRewrite:
             path:
@@ -43,23 +39,23 @@ spec:
               replacePrefixMatch: /
       backendRefs:
         - name: hermes-agent
-          namespace: {{ hermes_agent_namespace }}
+          namespace: hermes-agent
           port: 9119
     - matches:
         - path:
             type: Exact
-            value: {{ hermes_agent_api_path | quote }}
+            value: /hermes-api
       filters:
         - type: RequestRedirect
           requestRedirect:
             path:
               type: ReplaceFullPath
-              replaceFullPath: {{ (hermes_agent_api_path ~ '/') | quote }}
+              replaceFullPath: /hermes-api/
             statusCode: 302
     - matches:
         - path:
             type: PathPrefix
-            value: {{ (hermes_agent_api_path ~ '/') | quote }}
+            value: /hermes-api/
       filters:
         - type: URLRewrite
           urlRewrite:
@@ -68,5 +64,5 @@ spec:
               replacePrefixMatch: /
       backendRefs:
         - name: hermes-agent
-          namespace: {{ hermes_agent_namespace }}
+          namespace: hermes-agent
           port: 8642

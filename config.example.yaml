@@ -15,23 +15,6 @@ pgadmin_default_email: admin@infrastack.local
 
 # Optional - Hermes Agent with a co-located Camofox browser.
 hermes_agent_enabled: false
-hermes_agent_namespace: hermes-agent
-hermes_agent_application_name: hermes-agent
-
-hermes_agent_route_enabled: true
-hermes_agent_dashboard_path: /hermes
-hermes_agent_api_path: /hermes-api
-hermes_agent_route_hostname: ""
-hermes_agent_route_scheme: https
-hermes_agent_gateway_name: homelab
-hermes_agent_gateway_namespace: default
-hermes_agent_external_verify_enabled: true
-
-hermes_agent_dashboard_username: admin
-hermes_agent_image_repository: nousresearch/hermes-agent
-hermes_agent_image_tag: latest
-hermes_agent_camofox_image_repository: ghcr.io/redf0x1/camofox-browser
-hermes_agent_camofox_image_tag: latest
 
 hermes_agent_storage_class: local-path
 hermes_agent_data_storage_size: 5Gi
@@ -48,5 +31,4 @@ hermes_agent_camofox_cpu_limit: "1"
 hermes_agent_camofox_memory_limit: 2Gi
 
 hermes_agent_timezone: UTC
-hermes_agent_camofox_crash_report_enabled: false
 hermes_agent_camofox_vnc_resolution: 1920x1080
