@@ -2,7 +2,7 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
 metadata:
   name: n8n
-  namespace: {{ n8n_namespace }}
+  namespace: n8n
   labels:
     app.kubernetes.io/name: n8n
     app.kubernetes.io/managed-by: ansible
@@ -10,7 +10,7 @@ spec:
   from:
     - group: gateway.networking.k8s.io
       kind: HTTPRoute
-      namespace: {{ n8n_gateway_namespace }}
+      namespace: default
   to:
     - group: ""
       kind: Service
