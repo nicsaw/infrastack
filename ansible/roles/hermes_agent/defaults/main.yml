@@ -1,0 +1,19 @@
+---
+hermes_agent_enabled: false
+
+hermes_agent_storage_class: local-path
+hermes_agent_data_storage_size: 5Gi
+hermes_agent_camofox_storage_size: 2Gi
+hermes_agent_shared_memory_size: 1Gi
+
+hermes_agent_cpu_request: 500m
+hermes_agent_memory_request: 1Gi
+hermes_agent_cpu_limit: "2"
+hermes_agent_memory_limit: 4Gi
+hermes_agent_camofox_cpu_request: 250m
+hermes_agent_camofox_memory_request: 512Mi
+hermes_agent_camofox_cpu_limit: "1"
+hermes_agent_camofox_memory_limit: 2Gi
+
+hermes_agent_timezone: UTC
+hermes_agent_camofox_vnc_resolution: 1920x1080

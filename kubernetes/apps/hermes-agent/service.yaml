@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hermes-agent
+  labels:
+    app.kubernetes.io/name: hermes-agent
+spec:
+  selector:
+    app.kubernetes.io/name: hermes-agent
+  ports:
+    - name: api
+      port: 8642
+      targetPort: api
+      protocol: TCP
+    - name: dashboard
+      port: 9119
+      targetPort: dashboard
+      protocol: TCP
+    - name: camofox
+      port: 9377
+      targetPort: camofox
+      protocol: TCP
+    - name: novnc
+      port: 6080
+      targetPort: novnc
+      protocol: TCP
+    - name: vnc
+      port: 5900
+      targetPort: vnc
+      protocol: TCP
