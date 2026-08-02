@@ -20,18 +20,12 @@ spec:
             name: n8n-data
           patch: |-
             - op: replace
-              path: /spec/storageClassName
-              value: {{ n8n_storage_class | to_json }}
-            - op: replace
               path: /spec/resources/requests/storage
               value: {{ n8n_data_storage_size | to_json }}
         - target:
             kind: PersistentVolumeClaim
             name: n8n-files
           patch: |-
-            - op: replace
-              path: /spec/storageClassName
-              value: {{ n8n_storage_class | to_json }}
             - op: replace
               path: /spec/resources/requests/storage
               value: {{ n8n_files_storage_size | to_json }}
@@ -81,9 +75,6 @@ spec:
             - op: replace
               path: /spec/template/spec/containers/0/resources/limits/memory
               value: {{ n8n_postgres_memory_limit | to_json }}
-            - op: replace
-              path: /spec/volumeClaimTemplates/0/spec/storageClassName
-              value: {{ n8n_storage_class | to_json }}
             - op: replace
               path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
               value: {{ n8n_postgres_storage_size | to_json }}
