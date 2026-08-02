@@ -7,7 +7,6 @@ n8n_timezone: Australia/Sydney
 # Leave empty to generate a key for a fresh installation.
 n8n_encryption_key: ""
 
-n8n_storage_class: local-path
 n8n_data_storage_size: 10Gi
 n8n_files_storage_size: 5Gi
 n8n_postgres_storage_size: 20Gi
