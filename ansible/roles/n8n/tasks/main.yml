@@ -68,7 +68,6 @@
           - n8n_hostname is match('^[A-Za-z0-9.-]+$')
           - n8n_encryption_key | length == 0 or n8n_encryption_key | length >= 32
           - n8n_timezone | length > 0
-          - n8n_storage_class | length > 0
           - n8n_data_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
           - n8n_files_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
           - n8n_postgres_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
