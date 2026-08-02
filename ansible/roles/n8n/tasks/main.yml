@@ -315,6 +315,45 @@
           ==
           (prerequisites_repository_revision.stdout.split() | first)
 
+    - name: Restart n8n PostgreSQL when runtime configuration changed
+      ansible.builtin.command:
+        argv:
+          - k3s
+          - kubectl
+          - rollout
+          - restart
+          - statefulset/n8n-postgres
+          - --namespace=n8n
+      register: n8n_postgres_restart
+      changed_when: "'restarted' in n8n_postgres_restart.stdout"
+      when: "'configured' in n8n_runtime_config_apply.stdout"
+
+    - name: Wait for n8n PostgreSQL after runtime configuration changed
+      ansible.builtin.command:
+        argv:
+          - k3s
+          - kubectl
+          - rollout
+          - status
+          - statefulset/n8n-postgres
+          - --namespace=n8n
+          - --timeout=10m
+      changed_when: false
+      when: "'configured' in n8n_runtime_config_apply.stdout"
+
+    - name: Restart n8n when runtime configuration changed
+      ansible.builtin.command:
+        argv:
+          - k3s
+          - kubectl
+          - rollout
+          - restart
+          - deployment/n8n
+          - --namespace=n8n
+      register: n8n_restart
+      changed_when: "'restarted' in n8n_restart.stdout"
+      when: "'configured' in n8n_runtime_config_apply.stdout"
+
     - name: Display n8n access information
       ansible.builtin.debug:
         msg:
