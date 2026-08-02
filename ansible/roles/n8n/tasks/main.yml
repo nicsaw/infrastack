@@ -5,7 +5,7 @@
       - k3s
       - kubectl
       - delete
-      - "application/{{ n8n_application_name }}"
+      - application/n8n
       - --namespace=argocd
       - --ignore-not-found=true
   register: n8n_disabled_application
@@ -23,7 +23,7 @@
       - service/n8n
       - service/n8n-postgres
       - configmap/n8n-runtime
-      - "--namespace={{ n8n_namespace }}"
+      - --namespace=n8n
       - --ignore-not-found=true
   register: n8n_disabled_workloads
   changed_when: "'deleted' in n8n_disabled_workloads.stdout"
@@ -37,7 +37,7 @@
       - kubectl
       - delete
       - httproute/n8n
-      - "--namespace={{ n8n_gateway_namespace }}"
+      - --namespace=default
       - --ignore-not-found=true
   register: n8n_disabled_route
   changed_when: "'deleted' in n8n_disabled_route.stdout"
@@ -51,7 +51,7 @@
       - kubectl
       - delete
       - referencegrant/n8n
-      - "--namespace={{ n8n_namespace }}"
+      - --namespace=n8n
       - --ignore-not-found=true
   register: n8n_disabled_reference_grant
   changed_when: "'deleted' in n8n_disabled_reference_grant.stdout"
@@ -64,56 +64,21 @@
     - name: Validate n8n configuration
       ansible.builtin.assert:
         that:
-          - n8n_namespace is match('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$')
-          - n8n_application_name is match('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$')
+          - n8n_hostname | length > 0
+          - n8n_hostname is match('^[A-Za-z0-9.-]+$')
           - n8n_encryption_key | length == 0 or n8n_encryption_key | length >= 32
-          - not (n8n_route_enabled | bool) or n8n_hostname | length > 0
-          - not (n8n_route_enabled | bool) or n8n_hostname is match('^[A-Za-z0-9.-]+$')
-          - n8n_protocol in ['http', 'https']
-          - (n8n_proxy_hops | int) >= 0
-          - (n8n_replicas | int) == 1
-          - n8n_gateway_name | length > 0
-          - n8n_gateway_namespace is match('^[a-z0-9]([-a-z0-9]*[a-z0-9])?$')
           - n8n_timezone | length > 0
-          - n8n_postgres_database is match('^[A-Za-z_][A-Za-z0-9_]*$')
-          - n8n_postgres_user is match('^[A-Za-z_][A-Za-z0-9_]*$')
           - n8n_storage_class | length > 0
           - n8n_data_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
           - n8n_files_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
           - n8n_postgres_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
-          - n8n_image_repository | length > 0
-          - n8n_image_tag | length > 0
-          - n8n_runner_image_repository | length > 0
-          - n8n_postgres_image_repository | length > 0
-          - n8n_postgres_image_tag | length > 0
-        fail_msg: "Review the n8n settings in config.yaml."
+        fail_msg: "Set the n8n hostname and review the n8n capacity settings in config.yaml."
       no_log: true
-
-    - name: Resolve the n8n hostname and protocol
-      ansible.builtin.set_fact:
-        n8n_resolved_hostname: >-
-          {{
-            n8n_hostname
-            if n8n_route_enabled | bool
-            else 'n8n.' ~ n8n_namespace ~ '.svc.cluster.local'
-          }}
-        n8n_resolved_protocol: >-
-          {{ n8n_protocol if n8n_route_enabled | bool else 'http' }}
-
-    - name: Resolve the n8n base URL
-      ansible.builtin.set_fact:
-        n8n_resolved_base_url: >-
-          {{
-            n8n_resolved_protocol
-            ~ '://'
-            ~ n8n_resolved_hostname
-            ~ ('' if n8n_route_enabled | bool else ':5678')
-          }}
 
     - name: Create the n8n namespace
       ansible.builtin.shell: |
         set -o pipefail
-        k3s kubectl create namespace {{ n8n_namespace | quote }} \
+        k3s kubectl create namespace n8n \
           --dry-run=client \
           --output=yaml \
           | k3s kubectl apply --filename=-
@@ -131,7 +96,7 @@
           - kubectl
           - get
           - secret/n8n-secrets
-          - "--namespace={{ n8n_namespace }}"
+          - --namespace=n8n
           - --output=json
       changed_when: false
       failed_when: false
@@ -236,7 +201,7 @@
           ansible.builtin.shell: |
             set -o pipefail
             k3s kubectl create secret generic n8n-secrets \
-              --namespace={{ n8n_namespace | quote }} \
+              --namespace=n8n \
               --from-file=N8N_ENCRYPTION_KEY={{ (n8n_secret_directory.path ~ '/encryption-key') | quote }} \
               --from-file=POSTGRES_PASSWORD={{ (n8n_secret_directory.path ~ '/postgres-password') | quote }} \
               --from-file=N8N_RUNNERS_AUTH_TOKEN={{ (n8n_secret_directory.path ~ '/runner-token') | quote }} \
@@ -286,7 +251,6 @@
         owner: root
         group: root
         mode: "0600"
-      when: n8n_route_enabled | bool
 
     - name: Render the n8n ReferenceGrant
       ansible.builtin.template:
@@ -295,7 +259,6 @@
         owner: root
         group: root
         mode: "0600"
-      when: n8n_route_enabled | bool
 
     - name: Apply the n8n route resources
       ansible.builtin.command:
@@ -303,7 +266,7 @@
           - k3s
           - kubectl
           - apply
-          - --filename={{ item }}
+          - "--filename={{ item }}"
       loop:
         - /tmp/infrastack-n8n-http-route.yaml
         - /tmp/infrastack-n8n-reference-grant.yaml
@@ -311,33 +274,6 @@
       changed_when: >-
         'created' in n8n_route_apply.stdout or
         'configured' in n8n_route_apply.stdout
-      when: n8n_route_enabled | bool
-
-    - name: Remove the n8n HTTPRoute when private routing is disabled
-      ansible.builtin.command:
-        argv:
-          - k3s
-          - kubectl
-          - delete
-          - httproute/n8n
-          - "--namespace={{ n8n_gateway_namespace }}"
-          - --ignore-not-found=true
-      register: n8n_route_delete
-      changed_when: "'deleted' in n8n_route_delete.stdout"
-      when: not (n8n_route_enabled | bool)
-
-    - name: Remove the n8n ReferenceGrant when private routing is disabled
-      ansible.builtin.command:
-        argv:
-          - k3s
-          - kubectl
-          - delete
-          - referencegrant/n8n
-          - "--namespace={{ n8n_namespace }}"
-          - --ignore-not-found=true
-      register: n8n_reference_grant_delete
-      changed_when: "'deleted' in n8n_reference_grant_delete.stdout"
-      when: not (n8n_route_enabled | bool)
 
     - name: Render the n8n Argo CD Application
       ansible.builtin.template:
@@ -365,7 +301,7 @@
           - k3s
           - kubectl
           - get
-          - "application/{{ n8n_application_name }}"
+          - application/n8n
           - --namespace=argocd
           - --output=json
       changed_when: false
@@ -382,12 +318,9 @@
     - name: Display n8n access information
       ansible.builtin.debug:
         msg:
-          - "Internal URL: http://n8n.{{ n8n_namespace }}.svc.cluster.local:5678"
-          - >-
-            External URL: {{ n8n_resolved_base_url
-            if n8n_route_enabled | bool
-            else 'disabled' }}
+          - "Internal URL: http://n8n.n8n.svc.cluster.local:5678"
+          - "External URL: https://{{ n8n_hostname }}/"
           - >-
             Encryption key: sudo kubectl get secret n8n-secrets
-            --namespace={{ n8n_namespace }}
+            --namespace=n8n
             --output=jsonpath='{.data.N8N_ENCRYPTION_KEY}' | base64 --decode; echo
