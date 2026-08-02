@@ -23,6 +23,7 @@ InfraStack fixes the implementation conventions:
 - one n8n main replica with an external task-runner sidecar
 - PostgreSQL database and user: `n8n`
 - n8n, task-runner, and PostgreSQL images: versioned in Git
+- persistent storage class: K3s `local-path`
 
 Only installation differences remain configurable:
 
@@ -30,7 +31,7 @@ Only installation differences remain configurable:
 - public hostname
 - timezone
 - existing encryption key for migration
-- storage class and volume sizes
+- persistent volume sizes
 - CPU and memory requests and limits
 
 ## Preserve existing credentials
