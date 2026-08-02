@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ n8n_application_name }}
+  name: n8n
   namespace: argocd
   labels:
     app.kubernetes.io/name: n8n
@@ -13,11 +13,7 @@ spec:
     targetRevision: {{ repository_revision | quote }}
     path: kubernetes/apps/n8n
     kustomize:
-      namespace: {{ n8n_namespace }}
-      images:
-        - {{ ('docker.n8n.io/n8nio/n8n=' ~ n8n_image_repository ~ ':' ~ n8n_image_tag) | quote }}
-        - {{ ('n8nio/runners=' ~ n8n_runner_image_repository ~ ':' ~ n8n_image_tag) | quote }}
-        - {{ ('postgres=' ~ n8n_postgres_image_repository ~ ':' ~ n8n_postgres_image_tag) | quote }}
+      namespace: n8n
       patches:
         - target:
             kind: PersistentVolumeClaim
@@ -44,9 +40,6 @@ spec:
             kind: Deployment
             name: n8n
           patch: |-
-            - op: replace
-              path: /spec/replicas
-              value: {{ n8n_replicas | int }}
             - op: replace
               path: /spec/template/spec/containers/0/resources/requests/cpu
               value: {{ n8n_cpu_request | to_json }}
@@ -96,7 +89,7 @@ spec:
               value: {{ n8n_postgres_storage_size | to_json }}
   destination:
     server: https://kubernetes.default.svc
-    namespace: {{ n8n_namespace }}
+    namespace: n8n
   syncPolicy:
     automated:
       prune: true
