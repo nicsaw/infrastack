@@ -55,7 +55,10 @@ jobs:
         run: ansible-lint ansible/playbooks/homelab.yml
 
       - name: Render Kubernetes resources
-        run: kubectl kustomize kubernetes/clusters/homelab > /tmp/homelab.yaml
+        run: |
+          kubectl kustomize kubernetes/clusters/homelab > /tmp/homelab.yaml
+          printf '\n---\n' >> /tmp/homelab.yaml
+          kubectl kustomize kubernetes/apps/hermes-agent >> /tmp/homelab.yaml
 
       - name: Validate Kubernetes resources
         run: |

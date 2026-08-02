@@ -1,0 +1,301 @@
+---
+- name: Remove the Hermes Agent Argo CD Application when disabled
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - delete
+      - application/hermes-agent
+      - --namespace=argocd
+      - --ignore-not-found=true
+  register: hermes_agent_disabled_application
+  changed_when: "'deleted' in hermes_agent_disabled_application.stdout"
+  when: not (hermes_agent_enabled | bool)
+
+- name: Remove Hermes Agent runtime resources when disabled
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - delete
+      - deployment/hermes-agent
+      - service/hermes-agent
+      - configmap/hermes-agent-runtime
+      - --namespace=hermes-agent
+      - --ignore-not-found=true
+  register: hermes_agent_disabled_workloads
+  changed_when: "'deleted' in hermes_agent_disabled_workloads.stdout"
+  failed_when: false
+  when: not (hermes_agent_enabled | bool)
+
+- name: Remove the Hermes Agent route when disabled
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - delete
+      - httproute/hermes-agent
+      - --namespace=default
+      - --ignore-not-found=true
+  register: hermes_agent_disabled_route
+  changed_when: "'deleted' in hermes_agent_disabled_route.stdout"
+  failed_when: false
+  when: not (hermes_agent_enabled | bool)
+
+- name: Remove the Hermes Agent ReferenceGrant when disabled
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - delete
+      - referencegrant/hermes-agent
+      - --namespace=hermes-agent
+      - --ignore-not-found=true
+  register: hermes_agent_disabled_reference_grant
+  changed_when: "'deleted' in hermes_agent_disabled_reference_grant.stdout"
+  failed_when: false
+  when: not (hermes_agent_enabled | bool)
+
+- name: Configure Hermes Agent
+  when: hermes_agent_enabled | bool
+  block:
+    - name: Validate Hermes Agent configuration
+      ansible.builtin.assert:
+        that:
+          - hermes_agent_storage_class | length > 0
+          - hermes_agent_data_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
+          - hermes_agent_camofox_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
+          - hermes_agent_shared_memory_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
+          - hermes_agent_timezone | length > 0
+          - hermes_agent_camofox_vnc_resolution is match('^[1-9][0-9]*x[1-9][0-9]*$')
+        fail_msg: "Review the hermes_agent_* settings in config.yaml."
+
+    - name: Create the Hermes Agent namespace
+      ansible.builtin.shell: |
+        set -o pipefail
+        k3s kubectl create namespace hermes-agent \
+          --dry-run=client \
+          --output=yaml \
+          | k3s kubectl apply --filename=-
+      args:
+        executable: /bin/bash
+      register: hermes_agent_namespace_apply
+      changed_when: >-
+        'created' in hermes_agent_namespace_apply.stdout or
+        'configured' in hermes_agent_namespace_apply.stdout
+
+    - name: Read the Hermes Agent secret
+      ansible.builtin.command:
+        argv:
+          - k3s
+          - kubectl
+          - get
+          - secret/hermes-agent-env
+          - --namespace=hermes-agent
+          - --output=json
+      changed_when: false
+      failed_when: false
+      register: hermes_agent_secret
+      no_log: true
+
+    - name: Validate the existing Hermes Agent secret
+      ansible.builtin.assert:
+        that:
+          - "'API_SERVER_KEY' in (hermes_agent_secret.stdout | from_json).data"
+          - "'HERMES_DASHBOARD_BASIC_AUTH_USERNAME' in (hermes_agent_secret.stdout | from_json).data"
+          - "'HERMES_DASHBOARD_BASIC_AUTH_PASSWORD' in (hermes_agent_secret.stdout | from_json).data"
+          - "'HERMES_DASHBOARD_BASIC_AUTH_SECRET' in (hermes_agent_secret.stdout | from_json).data"
+        fail_msg: >-
+          The existing hermes-agent-env Secret is missing a required key.
+          Back it up, delete it, and rerun bootstrap.
+      when: hermes_agent_secret.rc == 0
+      no_log: true
+
+    - name: Create the Hermes Agent secret
+      when: hermes_agent_secret.rc != 0
+      block:
+        - name: Generate the Hermes Agent API key
+          ansible.builtin.command:
+            argv:
+              - python3
+              - -c
+              - "import secrets; print(secrets.token_urlsafe(32))"
+          changed_when: false
+          register: hermes_agent_generated_api_key
+          no_log: true
+
+        - name: Generate the Hermes Agent dashboard password
+          ansible.builtin.command:
+            argv:
+              - python3
+              - -c
+              - "import secrets; print(secrets.token_urlsafe(24))"
+          changed_when: false
+          register: hermes_agent_generated_dashboard_password
+          no_log: true
+
+        - name: Generate the Hermes Agent dashboard session secret
+          ansible.builtin.command:
+            argv:
+              - python3
+              - -c
+              - "import secrets; print(secrets.token_urlsafe(32))"
+          changed_when: false
+          register: hermes_agent_generated_dashboard_secret
+          no_log: true
+
+        - name: Create a temporary Hermes Agent secret directory
+          ansible.builtin.tempfile:
+            state: directory
+            suffix: -hermes-agent-env
+          changed_when: false
+          register: hermes_agent_secret_directory
+          no_log: true
+
+        - name: Render the Hermes Agent secret environment file
+          ansible.builtin.template:
+            src: secret.env.j2
+            dest: "{{ hermes_agent_secret_directory.path }}/hermes.env"
+            owner: root
+            group: root
+            mode: "0600"
+          changed_when: false
+          no_log: true
+
+        - name: Install the Hermes Agent secret
+          ansible.builtin.shell: |
+            set -o pipefail
+            k3s kubectl create secret generic hermes-agent-env \
+              --namespace=hermes-agent \
+              --from-env-file={{ (hermes_agent_secret_directory.path ~ '/hermes.env') | quote }} \
+              --dry-run=client \
+              --output=yaml \
+              | k3s kubectl apply --filename=-
+          args:
+            executable: /bin/bash
+          register: hermes_agent_secret_apply
+          changed_when: >-
+            'created' in hermes_agent_secret_apply.stdout or
+            'configured' in hermes_agent_secret_apply.stdout
+          no_log: true
+      always:
+        - name: Remove the temporary Hermes Agent secret directory
+          ansible.builtin.file:
+            path: "{{ hermes_agent_secret_directory.path | default('') }}"
+            state: absent
+          when: hermes_agent_secret_directory.path | default('') | length > 0
+          changed_when: false
+          no_log: true
+
+    - name: Render the Hermes Agent runtime configuration
+      ansible.builtin.template:
+        src: runtime-config.yaml.j2
+        dest: /tmp/infrastack-hermes-agent-runtime.yaml
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Apply the Hermes Agent runtime configuration
+      ansible.builtin.command:
+        argv:
+          - k3s
+          - kubectl
+          - apply
+          - --filename=/tmp/infrastack-hermes-agent-runtime.yaml
+      register: hermes_agent_runtime_config_apply
+      changed_when: >-
+        'created' in hermes_agent_runtime_config_apply.stdout or
+        'configured' in hermes_agent_runtime_config_apply.stdout
+
+    - name: Render the Hermes Agent HTTPRoute
+      ansible.builtin.template:
+        src: http-route.yaml.j2
+        dest: /tmp/infrastack-hermes-agent-http-route.yaml
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Render the Hermes Agent ReferenceGrant
+      ansible.builtin.template:
+        src: reference-grant.yaml.j2
+        dest: /tmp/infrastack-hermes-agent-reference-grant.yaml
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Apply the Hermes Agent route resources
+      ansible.builtin.command:
+        argv:
+          - k3s
+          - kubectl
+          - apply
+          - "--filename={{ item }}"
+      loop:
+        - /tmp/infrastack-hermes-agent-http-route.yaml
+        - /tmp/infrastack-hermes-agent-reference-grant.yaml
+      register: hermes_agent_route_apply
+      changed_when: >-
+        'created' in hermes_agent_route_apply.stdout or
+        'configured' in hermes_agent_route_apply.stdout
+
+    - name: Render the Hermes Agent Argo CD Application
+      ansible.builtin.template:
+        src: application.yaml.j2
+        dest: /tmp/infrastack-hermes-agent-application.yaml
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Apply the Hermes Agent Argo CD Application
+      ansible.builtin.command:
+        argv:
+          - k3s
+          - kubectl
+          - apply
+          - --filename=/tmp/infrastack-hermes-agent-application.yaml
+      register: hermes_agent_application_apply
+      changed_when: >-
+        'created' in hermes_agent_application_apply.stdout or
+        'configured' in hermes_agent_application_apply.stdout
+
+    - name: Wait for the Hermes Agent Argo CD Application sync
+      ansible.builtin.command:
+        argv:
+          - k3s
+          - kubectl
+          - get
+          - application/hermes-agent
+          - --namespace=argocd
+          - --output=json
+      changed_when: false
+      register: hermes_agent_application
+      retries: 60
+      delay: 5
+      until:
+        - (hermes_agent_application.stdout | from_json).status.sync.status | default('') == 'Synced'
+        - >-
+          (hermes_agent_application.stdout | from_json).status.sync.revision | default('')
+          ==
+          (prerequisites_repository_revision.stdout.split() | first)
+
+    - name: Display Hermes Agent access information
+      ansible.builtin.debug:
+        msg:
+          - "Internal dashboard: http://hermes-agent.hermes-agent.svc.cluster.local:9119"
+          - "Internal API: http://hermes-agent.hermes-agent.svc.cluster.local:8642"
+          - "External dashboard: https://{{ tailscale_dns_name }}/hermes/"
+          - "External API: https://{{ tailscale_dns_name }}/hermes-api/"
+          - >-
+            Dashboard username: sudo kubectl get secret hermes-agent-env
+            --namespace=hermes-agent
+            --output=jsonpath='{.data.HERMES_DASHBOARD_BASIC_AUTH_USERNAME}'
+            | base64 --decode; echo
+          - >-
+            Dashboard password: sudo kubectl get secret hermes-agent-env
+            --namespace=hermes-agent
+            --output=jsonpath='{.data.HERMES_DASHBOARD_BASIC_AUTH_PASSWORD}'
+            | base64 --decode; echo
+          - >-
+            API key: sudo kubectl get secret hermes-agent-env
+            --namespace=hermes-agent
+            --output=jsonpath='{.data.API_SERVER_KEY}' | base64 --decode; echo

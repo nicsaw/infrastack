@@ -1,0 +1,78 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hermes-agent
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: hermes-agent
+    app.kubernetes.io/managed-by: ansible
+spec:
+  project: default
+  source:
+    repoURL: {{ prerequisites_resolved_repository_url | quote }}
+    targetRevision: {{ repository_revision | quote }}
+    path: kubernetes/apps/hermes-agent
+    kustomize:
+      namespace: hermes-agent
+      patches:
+        - target:
+            kind: PersistentVolumeClaim
+            name: hermes-agent-data
+          patch: |-
+            - op: replace
+              path: /spec/storageClassName
+              value: {{ hermes_agent_storage_class | to_json }}
+            - op: replace
+              path: /spec/resources/requests/storage
+              value: {{ hermes_agent_data_storage_size | to_json }}
+        - target:
+            kind: PersistentVolumeClaim
+            name: hermes-agent-camofox
+          patch: |-
+            - op: replace
+              path: /spec/storageClassName
+              value: {{ hermes_agent_storage_class | to_json }}
+            - op: replace
+              path: /spec/resources/requests/storage
+              value: {{ hermes_agent_camofox_storage_size | to_json }}
+        - target:
+            group: apps
+            kind: Deployment
+            name: hermes-agent
+          patch: |-
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/requests/cpu
+              value: {{ hermes_agent_cpu_request | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/requests/memory
+              value: {{ hermes_agent_memory_request | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/limits/cpu
+              value: {{ hermes_agent_cpu_limit | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/limits/memory
+              value: {{ hermes_agent_memory_limit | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/1/resources/requests/cpu
+              value: {{ hermes_agent_camofox_cpu_request | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/1/resources/requests/memory
+              value: {{ hermes_agent_camofox_memory_request | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/1/resources/limits/cpu
+              value: {{ hermes_agent_camofox_cpu_limit | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/1/resources/limits/memory
+              value: {{ hermes_agent_camofox_memory_limit | to_json }}
+            - op: replace
+              path: /spec/template/spec/volumes/2/emptyDir/sizeLimit
+              value: {{ hermes_agent_shared_memory_size | to_json }}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hermes-agent
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

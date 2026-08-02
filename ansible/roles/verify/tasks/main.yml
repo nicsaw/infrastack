@@ -81,6 +81,19 @@
       - --timeout=15m
   changed_when: false
 
+- name: Verify Hermes Agent deployment
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - rollout
+      - status
+      - deployment/hermes-agent
+      - --namespace=hermes-agent
+      - --timeout=15m
+  changed_when: false
+  when: hermes_agent_enabled | bool
+
 - name: Verify local Homepage
   ansible.builtin.uri:
     url: http://127.0.0.1/
@@ -125,6 +138,18 @@
   retries: 120
   delay: 5
   until: verify_local_crawl4ai.status == 200
+
+- name: Verify local Hermes Agent dashboard
+  ansible.builtin.uri:
+    url: http://127.0.0.1/hermes/api/status
+    headers:
+      Host: "{{ tailscale_dns_name }}"
+    status_code: 200
+  register: verify_local_hermes_agent
+  retries: 120
+  delay: 5
+  until: verify_local_hermes_agent.status == 200
+  when: hermes_agent_enabled | bool
 
 - name: Verify private Homepage
   ansible.builtin.uri:
@@ -176,6 +201,17 @@
   delay: 5
   until: verify_private_crawl4ai.status == 200
 
+- name: Verify private Hermes Agent dashboard
+  ansible.builtin.uri:
+    url: "https://{{ tailscale_dns_name }}/hermes/api/status"
+    status_code: 200
+    validate_certs: true
+  register: verify_private_hermes_agent
+  retries: 120
+  delay: 5
+  until: verify_private_hermes_agent.status == 200
+  when: hermes_agent_enabled | bool
+
 - name: Print access URLs
   ansible.builtin.debug:
     msg:
@@ -184,3 +220,10 @@
       - "pgAdmin: https://{{ tailscale_dns_name }}/pgadmin/"
       - "SearXNG: https://{{ tailscale_dns_name }}/searxng/"
       - "Crawl4AI API: https://{{ tailscale_dns_name }}/crawl4ai/"
+
+- name: Print Hermes Agent access URLs
+  ansible.builtin.debug:
+    msg:
+      - "Hermes dashboard: https://{{ tailscale_dns_name }}/hermes/"
+      - "Hermes API: https://{{ tailscale_dns_name }}/hermes-api/"
+  when: hermes_agent_enabled | bool
