@@ -1,7 +1,7 @@
 ---
 n8n_enabled: false
 n8n_hostname: ""
-n8n_timezone: UTC
+n8n_timezone: Australia/Sydney
 
 # Use the existing key before migrating an existing n8n installation.
 # Leave empty to generate a key for a fresh installation.
