@@ -5,31 +5,33 @@ optional Argo CD application. The existing Docker Compose service is unchanged.
 
 ## Configure
 
-n8n is disabled by default. Add overrides to the ignored `config.yaml`:
+n8n is disabled by default. Add the installation-specific values to the ignored
+`config.yaml`:
 
 ```yaml
 n8n_enabled: true
-n8n_namespace: n8n
-n8n_timezone: Australia/Sydney
-
-# Enable only when DNS and the Gateway route are ready.
-n8n_route_enabled: true
 n8n_hostname: n8n.example.net
-n8n_protocol: https
-n8n_proxy_hops: 1
-n8n_gateway_name: homelab
-n8n_gateway_namespace: default
+n8n_timezone: Australia/Sydney
 ```
 
-The defaults can also be overridden for:
+InfraStack fixes the implementation conventions:
 
-- n8n, task-runner, and PostgreSQL images
+- namespace and Argo CD Application: `n8n`
+- Gateway: `default/homelab`
+- route: HTTPS on the configured hostname at `/`
+- trusted proxy chain: Cloudflare Tunnel then Traefik
+- one n8n main replica with an external task-runner sidecar
+- PostgreSQL database and user: `n8n`
+- n8n, task-runner, and PostgreSQL images: versioned in Git
+
+Only installation differences remain configurable:
+
+- enable or disable n8n
+- public hostname
+- timezone
+- existing encryption key for migration
 - storage class and volume sizes
 - CPU and memory requests and limits
-- namespace, hostname, proxy count, and timezone
-- optional external health verification
-
-See `config.example.yaml` for every supported setting.
 
 ## Preserve existing credentials
 
@@ -55,13 +57,14 @@ or n8n cannot decrypt saved credentials.
 ./bootstrap.sh
 ```
 
-Ansible creates runtime configuration and secrets, then creates a dedicated Argo
-CD Application for `kubernetes/apps/n8n`. Setting `n8n_enabled: false` removes the
-running n8n workloads and route while preserving Secrets and persistent volumes.
+Ansible creates the `n8n` namespace, runtime configuration, Secrets, fixed
+Gateway API route, and a dedicated Argo CD Application for
+`kubernetes/apps/n8n`.
+
+Setting `n8n_enabled: false` removes the running application and route while
+retaining the Secret and persistent volumes.
 
 ## Verify
-
-With the default namespace:
 
 ```bash
 sudo kubectl rollout status statefulset/n8n-postgres \
@@ -76,19 +79,28 @@ sudo kubectl rollout status deployment/n8n \
 The internal Service is:
 
 ```text
-http://n8n.<NAMESPACE>.svc.cluster.local:5678
+http://n8n.n8n.svc.cluster.local:5678
 ```
 
-When routing is enabled, test Traefik locally:
+Test the Traefik route locally before switching public DNS:
 
 ```bash
 curl -fsS \
-  -H 'Host: <N8N_HOSTNAME>' \
+  -H 'Host: n8n.example.net' \
   http://127.0.0.1/healthz
 ```
 
 ## Public cutover
 
-Point the chosen hostname at the proxy that reaches the configured Kubernetes
-Gateway. Stop the Compose n8n service before restoring its database or enabling
-workflows in K3s so both instances do not process triggers simultaneously.
+Point the configured hostname at the Cloudflare Tunnel origin that reaches the
+InfraStack Traefik Gateway.
+
+Stop the Compose n8n service before restoring its database or enabling workflows
+in K3s so both instances do not process triggers simultaneously.
+
+The bootstrap verifies the Kubernetes rollout and the local Gateway route. Test
+the public HTTPS endpoint after DNS and Cloudflare are configured:
+
+```bash
+curl -fsS https://n8n.example.net/healthz
+```
