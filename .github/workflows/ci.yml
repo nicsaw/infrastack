@@ -57,9 +57,10 @@ jobs:
       - name: Render Kubernetes resources
         run: |
           kubectl kustomize kubernetes/clusters/homelab > /tmp/homelab.yaml
-          kubectl kustomize kubernetes/apps/n8n > /tmp/n8n.yaml
           printf '\n---\n' >> /tmp/homelab.yaml
-          cat /tmp/n8n.yaml >> /tmp/homelab.yaml
+          kubectl kustomize kubernetes/apps/hermes-agent >> /tmp/homelab.yaml
+          printf '\n---\n' >> /tmp/homelab.yaml
+          kubectl kustomize kubernetes/apps/n8n >> /tmp/homelab.yaml
 
       - name: Validate Kubernetes resources
         run: |
