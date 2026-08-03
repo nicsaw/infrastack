@@ -34,6 +34,14 @@ Only installation differences remain configurable:
 - persistent volume sizes
 - CPU and memory requests and limits
 
+## Persistent storage
+
+`n8n_data_storage_size`, `n8n_files_storage_size`, and
+`n8n_postgres_storage_size` are installation-time values. Once their
+corresponding PVC or PostgreSQL StatefulSet template exists, bootstrap rejects
+changes to these settings. K3s `local-path` does not provide managed online
+expansion; changing capacity requires a documented migration or recreation.
+
 ## Preserve existing credentials
 
 Before migrating an existing instance, set its current encryption key before the
