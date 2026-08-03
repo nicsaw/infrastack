@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: n8n-runtime
+  namespace: n8n
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/managed-by: ansible
+data:
+  N8N_HOST: {{ n8n_hostname | quote }}
+  N8N_PORT: "5678"
+  N8N_PROTOCOL: "https"
+  N8N_EDITOR_BASE_URL: {{ ('https://' ~ n8n_hostname) | quote }}
+  WEBHOOK_URL: {{ ('https://' ~ n8n_hostname ~ '/') | quote }}
+  N8N_PROXY_HOPS: "2"
+  GENERIC_TIMEZONE: {{ n8n_timezone | quote }}
+  TZ: {{ n8n_timezone | quote }}
+  PGTZ: {{ n8n_timezone | quote }}
+  DB_POSTGRESDB_HOST: "n8n-postgres.n8n.svc.cluster.local"
+  DB_POSTGRESDB_PORT: "5432"
+  DB_POSTGRESDB_DATABASE: "n8n"
+  DB_POSTGRESDB_USER: "n8n"
+  POSTGRES_DB: "n8n"
+  POSTGRES_USER: "n8n"

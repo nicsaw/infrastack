@@ -1,0 +1,194 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+  labels:
+    app.kubernetes.io/name: n8n
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: n8n
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: n8n
+    spec:
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 60
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:18
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -ec
+          args:
+            - |
+              until pg_isready \
+                --host=n8n-postgres \
+                --username="$POSTGRES_USER" \
+                --dbname="$POSTGRES_DB"; do
+                sleep 2
+              done
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: n8n-runtime
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: n8n-runtime
+                  key: POSTGRES_USER
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 999
+            runAsGroup: 999
+            seccompProfile:
+              type: RuntimeDefault
+      containers:
+        - name: n8n
+          image: docker.n8n.io/n8nio/n8n:2.30.5
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: n8n-runtime
+          env:
+            - name: N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS
+              value: "true"
+            - name: N8N_RESTRICT_FILE_ACCESS_TO
+              value: /files
+            - name: N8N_DIAGNOSTICS_ENABLED
+              value: "false"
+            - name: NODE_ENV
+              value: production
+            - name: DB_TYPE
+              value: postgresdb
+            - name: DB_POSTGRESDB_SCHEMA
+              value: public
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secrets
+                  key: POSTGRES_PASSWORD
+            - name: N8N_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secrets
+                  key: N8N_ENCRYPTION_KEY
+            - name: N8N_RUNNERS_MODE
+              value: external
+            - name: N8N_RUNNERS_BROKER_LISTEN_ADDRESS
+              value: 0.0.0.0
+            - name: N8N_RUNNERS_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secrets
+                  key: N8N_RUNNERS_AUTH_TOKEN
+            - name: N8N_NATIVE_PYTHON_RUNNER
+              value: "true"
+          ports:
+            - name: http
+              containerPort: 5678
+              protocol: TCP
+            - name: task-broker
+              containerPort: 5679
+              protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 60
+          readinessProbe:
+            httpGet:
+              path: /healthz/readiness
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: data
+              mountPath: /home/node/.n8n
+            - name: files
+              mountPath: /files
+            - name: temporary
+              mountPath: /tmp
+        - name: task-runners
+          image: n8nio/runners:2.30.5
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: N8N_RUNNERS_TASK_BROKER_URI
+              value: http://localhost:5679
+            - name: N8N_RUNNERS_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-secrets
+                  key: N8N_RUNNERS_AUTH_TOKEN
+            - name: N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT
+              value: "15"
+            - name: N8N_RUNNERS_LAUNCHER_LOG_LEVEL
+              value: info
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            seccompProfile:
+              type: RuntimeDefault
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: n8n-data
+        - name: files
+          persistentVolumeClaim:
+            claimName: n8n-files
+        - name: temporary
+          emptyDir:
+            sizeLimit: 1Gi

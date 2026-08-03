@@ -11,7 +11,7 @@ github_runners_max: 5
 github_runners_token: "TODO_github_pat"
 
 # pgAdmin initial administrator account.
-pgadmin_default_email: admin@infrastack.local
+pgadmin_default_email: nicholassaw2004@gmail.com
 
 # Optional - Hermes Agent with a co-located Camofox browser.
 hermes_agent_enabled: false
@@ -30,5 +30,32 @@ hermes_agent_camofox_memory_request: 512Mi
 hermes_agent_camofox_cpu_limit: "1"
 hermes_agent_camofox_memory_limit: 2Gi
 
-hermes_agent_timezone: UTC
+hermes_agent_timezone: Australia/Sydney
 hermes_agent_camofox_vnc_resolution: 1920x1080
+
+# Optional - n8n with a dedicated PostgreSQL instance and task-runner sidecar.
+n8n_enabled: false
+
+# Required when n8n is enabled. InfraStack publishes n8n over HTTPS through the default/homelab Gateway.
+n8n_hostname: n8n.nicholassaw.com
+n8n_timezone: Australia/Sydney
+
+# Use the existing key before migrating n8n data. Leave empty for a fresh install.
+n8n_encryption_key: ""
+
+n8n_data_storage_size: 10Gi
+n8n_files_storage_size: 5Gi
+n8n_postgres_storage_size: 20Gi
+
+n8n_cpu_request: 250m
+n8n_memory_request: 512Mi
+n8n_cpu_limit: "1"
+n8n_memory_limit: 2Gi
+n8n_runner_cpu_request: 100m
+n8n_runner_memory_request: 256Mi
+n8n_runner_cpu_limit: 500m
+n8n_runner_memory_limit: 512Mi
+n8n_postgres_cpu_request: 200m
+n8n_postgres_memory_request: 512Mi
+n8n_postgres_cpu_limit: "1"
+n8n_postgres_memory_limit: 1Gi

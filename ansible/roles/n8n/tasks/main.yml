@@ -1,0 +1,8 @@
+---
+- name: Remove n8n resources when disabled
+  ansible.builtin.import_tasks: cleanup.yml
+  when: not (n8n_enabled | bool)
+
+- name: Configure n8n
+  ansible.builtin.import_tasks: configure.yml
+  when: n8n_enabled | bool

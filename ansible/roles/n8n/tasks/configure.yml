@@ -1,0 +1,39 @@
+---
+- name: Validate n8n configuration
+  ansible.builtin.assert:
+    that:
+      - n8n_hostname | length <= 253
+      - n8n_hostname is match('^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\\.(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?))*$')
+      - n8n_encryption_key | length == 0 or n8n_encryption_key | length >= 32
+      - n8n_timezone | length > 0
+      - n8n_data_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
+      - n8n_files_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
+      - n8n_postgres_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
+    fail_msg: "Set the n8n hostname and review the n8n capacity settings in config.yaml."
+  no_log: true
+
+- name: Create the n8n namespace
+  ansible.builtin.shell: |
+    set -o pipefail
+    k3s kubectl create namespace n8n \
+      --dry-run=client \
+      --output=yaml \
+      | k3s kubectl apply --filename=-
+  args:
+    executable: /bin/bash
+  register: n8n_namespace_apply
+  changed_when: >-
+    'created' in n8n_namespace_apply.stdout or
+    'configured' in n8n_namespace_apply.stdout
+
+- name: Configure n8n storage
+  ansible.builtin.import_tasks: storage.yml
+
+- name: Configure n8n secrets
+  ansible.builtin.import_tasks: secrets.yml
+
+- name: Configure n8n runtime
+  ansible.builtin.import_tasks: runtime.yml
+
+- name: Configure n8n application
+  ansible.builtin.import_tasks: application.yml

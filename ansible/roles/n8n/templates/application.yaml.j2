@@ -1,0 +1,89 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: n8n
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: n8n
+    app.kubernetes.io/managed-by: ansible
+spec:
+  project: default
+  source:
+    repoURL: {{ prerequisites_resolved_repository_url | quote }}
+    targetRevision: {{ repository_revision | quote }}
+    path: kubernetes/apps/n8n
+    kustomize:
+      namespace: n8n
+      patches:
+        - target:
+            kind: PersistentVolumeClaim
+            name: n8n-data
+          patch: |-
+            - op: replace
+              path: /spec/resources/requests/storage
+              value: {{ n8n_data_storage_size | to_json }}
+        - target:
+            kind: PersistentVolumeClaim
+            name: n8n-files
+          patch: |-
+            - op: replace
+              path: /spec/resources/requests/storage
+              value: {{ n8n_files_storage_size | to_json }}
+        - target:
+            group: apps
+            kind: Deployment
+            name: n8n
+          patch: |-
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/requests/cpu
+              value: {{ n8n_cpu_request | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/requests/memory
+              value: {{ n8n_memory_request | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/limits/cpu
+              value: {{ n8n_cpu_limit | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/limits/memory
+              value: {{ n8n_memory_limit | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/1/resources/requests/cpu
+              value: {{ n8n_runner_cpu_request | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/1/resources/requests/memory
+              value: {{ n8n_runner_memory_request | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/1/resources/limits/cpu
+              value: {{ n8n_runner_cpu_limit | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/1/resources/limits/memory
+              value: {{ n8n_runner_memory_limit | to_json }}
+        - target:
+            group: apps
+            kind: StatefulSet
+            name: n8n-postgres
+          patch: |-
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/requests/cpu
+              value: {{ n8n_postgres_cpu_request | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/requests/memory
+              value: {{ n8n_postgres_memory_request | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/limits/cpu
+              value: {{ n8n_postgres_cpu_limit | to_json }}
+            - op: replace
+              path: /spec/template/spec/containers/0/resources/limits/memory
+              value: {{ n8n_postgres_memory_limit | to_json }}
+            - op: replace
+              path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+              value: {{ n8n_postgres_storage_size | to_json }}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: n8n
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
