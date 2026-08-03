@@ -12,10 +12,16 @@
   loop:
     - resource: pvc/n8n-data
       jsonpath: "{.spec.resources.requests.storage}"
+      configured: "{{ n8n_data_storage_size }}"
     - resource: pvc/n8n-files
       jsonpath: "{.spec.resources.requests.storage}"
+      configured: "{{ n8n_files_storage_size }}"
+    - resource: pvc/data-n8n-postgres-0
+      jsonpath: "{.spec.resources.requests.storage}"
+      configured: "{{ n8n_postgres_storage_size }}"
     - resource: statefulset/n8n-postgres
       jsonpath: "{.spec.volumeClaimTemplates[0].spec.resources.requests.storage}"
+      configured: "{{ n8n_postgres_storage_size }}"
   changed_when: false
   register: n8n_existing_storage
 
@@ -23,14 +29,29 @@
   ansible.builtin.assert:
     that:
       - >-
-        n8n_existing_storage.results[0].stdout | length == 0 or
-        n8n_existing_storage.results[0].stdout == n8n_data_storage_size
-      - >-
-        n8n_existing_storage.results[1].stdout | length == 0 or
-        n8n_existing_storage.results[1].stdout == n8n_files_storage_size
-      - >-
-        n8n_existing_storage.results[2].stdout | length == 0 or
-        n8n_existing_storage.results[2].stdout == n8n_postgres_storage_size
+        item.stdout | length == 0 or
+        (
+          (item.stdout | regex_replace('[A-Za-z]+$', '') | int) *
+          n8n_storage_binary_unit_multipliers[
+            item.stdout | regex_replace('^[0-9]+', '')
+          ]
+        ) == (
+          (item.item.configured | regex_replace('[A-Za-z]+$', '') | int) *
+          n8n_storage_binary_unit_multipliers[
+            item.item.configured | regex_replace('^[0-9]+', '')
+          ]
+        )
     fail_msg: >-
       Existing n8n storage requests must match the configured capacity.
       Changing a storage size requires a documented migration or recreation.
+  loop: "{{ n8n_existing_storage.results }}"
+  loop_control:
+    label: "{{ item.item.resource }}"
+  vars:
+    n8n_storage_binary_unit_multipliers:
+      Ki: 1
+      Mi: 1024
+      Gi: 1048576
+      Ti: 1073741824
+      Pi: 1099511627776
+      Ei: 1125899906842624

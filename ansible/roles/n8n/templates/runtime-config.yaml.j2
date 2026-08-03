@@ -11,7 +11,7 @@ data:
   N8N_PORT: "5678"
   N8N_PROTOCOL: "https"
   N8N_EDITOR_BASE_URL: {{ ('https://' ~ n8n_hostname) | quote }}
-  N8N_WEBHOOK_URL: {{ ('https://' ~ n8n_hostname ~ '/') | quote }}
+  WEBHOOK_URL: {{ ('https://' ~ n8n_hostname ~ '/') | quote }}
   N8N_PROXY_HOPS: "2"
   GENERIC_TIMEZONE: {{ n8n_timezone | quote }}
   TZ: {{ n8n_timezone | quote }}

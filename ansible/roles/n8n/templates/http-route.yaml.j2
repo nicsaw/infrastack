@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/managed-by: ansible
 spec:
   parentRefs:
-    - name: {{ cluster_name }}
+    - name: homelab
       namespace: default
   hostnames:
     - {{ n8n_hostname | quote }}
