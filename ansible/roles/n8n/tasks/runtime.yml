@@ -1,0 +1,20 @@
+---
+- name: Render the n8n runtime configuration
+  ansible.builtin.template:
+    src: runtime-config.yaml.j2
+    dest: /tmp/infrastack-n8n-runtime-config.yaml
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Apply the n8n runtime configuration
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - apply
+      - --filename=/tmp/infrastack-n8n-runtime-config.yaml
+  register: n8n_runtime_config_apply
+  changed_when: >-
+    'created' in n8n_runtime_config_apply.stdout or
+    'configured' in n8n_runtime_config_apply.stdout

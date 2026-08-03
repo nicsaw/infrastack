@@ -36,8 +36,7 @@ hermes_agent_camofox_vnc_resolution: 1920x1080
 # Optional - n8n with a dedicated PostgreSQL instance and task-runner sidecar.
 n8n_enabled: false
 
-# Required when n8n is enabled. InfraStack publishes n8n over HTTPS through
-# the default/homelab Gateway.
+# Required when n8n is enabled. InfraStack publishes n8n over HTTPS through the default/homelab Gateway.
 n8n_hostname: n8n.nicholassaw.com
 n8n_timezone: Australia/Sydney
 

@@ -1,0 +1,59 @@
+---
+- name: Remove the n8n Argo CD Application when disabled
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - delete
+      - application/n8n
+      - --namespace=argocd
+      - --ignore-not-found=true
+  register: n8n_disabled_application
+  changed_when: "'deleted' in n8n_disabled_application.stdout"
+  when: not (n8n_enabled | bool)
+
+- name: Remove n8n runtime resources when disabled
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - delete
+      - deployment/n8n
+      - statefulset/n8n-postgres
+      - service/n8n
+      - service/n8n-postgres
+      - configmap/n8n-runtime
+      - --namespace=n8n
+      - --ignore-not-found=true
+  register: n8n_disabled_workloads
+  changed_when: "'deleted' in n8n_disabled_workloads.stdout"
+  failed_when: false
+  when: not (n8n_enabled | bool)
+
+- name: Remove the n8n route when disabled
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - delete
+      - httproute/n8n
+      - --namespace=default
+      - --ignore-not-found=true
+  register: n8n_disabled_route
+  changed_when: "'deleted' in n8n_disabled_route.stdout"
+  failed_when: false
+  when: not (n8n_enabled | bool)
+
+- name: Remove the n8n ReferenceGrant when disabled
+  ansible.builtin.command:
+    argv:
+      - k3s
+      - kubectl
+      - delete
+      - referencegrant/n8n
+      - --namespace=n8n
+      - --ignore-not-found=true
+  register: n8n_disabled_reference_grant
+  changed_when: "'deleted' in n8n_disabled_reference_grant.stdout"
+  failed_when: false
+  when: not (n8n_enabled | bool)

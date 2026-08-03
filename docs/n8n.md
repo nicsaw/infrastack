@@ -1,12 +1,10 @@
 # n8n on K3s
 
-InfraStack can deploy n8n, PostgreSQL, and an external task-runner sidecar as an
-optional Argo CD application. The existing Docker Compose service is unchanged.
+InfraStack can deploy n8n, PostgreSQL, and an external task-runner sidecar as an optional Argo CD application. The existing Docker Compose service is unchanged.
 
 ## Configure
 
-n8n is disabled by default. Add the installation-specific values to the ignored
-`config.yaml`:
+n8n is disabled by default. Add the installation-specific values to the ignored `config.yaml`:
 
 ```yaml
 n8n_enabled: true
@@ -36,16 +34,11 @@ Only installation differences remain configurable:
 
 ## Persistent storage
 
-`n8n_data_storage_size`, `n8n_files_storage_size`, and
-`n8n_postgres_storage_size` are installation-time values. Once their
-corresponding PVC or PostgreSQL StatefulSet template exists, bootstrap rejects
-changes to these settings. K3s `local-path` does not provide managed online
-expansion; changing capacity requires a documented migration or recreation.
+`n8n_data_storage_size`, `n8n_files_storage_size`, and `n8n_postgres_storage_size` are installation-time values. Once their corresponding PVC or PostgreSQL StatefulSet template exists, bootstrap rejects changes to these settings. K3s `local-path` does not provide managed online expansion; changing capacity requires a documented migration or recreation.
 
 ## Preserve existing credentials
 
-Before migrating an existing instance, set its current encryption key before the
-first K3s deployment:
+Before migrating an existing instance, set its current encryption key before the first K3s deployment:
 
 ```yaml
 n8n_encryption_key: "REPLACE_WITH_EXISTING_KEY"
@@ -57,8 +50,7 @@ Read the current key from Compose:
 docker compose exec -T n8n cat /home/node/.n8n/config
 ```
 
-The key must match the existing instance before restoring its PostgreSQL data,
-or n8n cannot decrypt saved credentials.
+The key must match the existing instance before restoring its PostgreSQL data, or n8n cannot decrypt saved credentials.
 
 ## Install
 
@@ -66,12 +58,9 @@ or n8n cannot decrypt saved credentials.
 ./bootstrap.sh
 ```
 
-Ansible creates the `n8n` namespace, runtime configuration, Secrets, fixed
-Gateway API route, and a dedicated Argo CD Application for
-`kubernetes/apps/n8n`.
+Ansible creates the `n8n` namespace, runtime configuration, Secrets, fixed Gateway API route, and a dedicated Argo CD Application for `kubernetes/apps/n8n`.
 
-Setting `n8n_enabled: false` removes the running application and route while
-retaining the Secret and persistent volumes.
+Setting `n8n_enabled: false` removes the running application and route while retaining the Secret and persistent volumes.
 
 ## Verify
 
@@ -101,14 +90,11 @@ curl -fsS \
 
 ## Public cutover
 
-Point the configured hostname at the Cloudflare Tunnel origin that reaches the
-InfraStack Traefik Gateway.
+Point the configured hostname at the Cloudflare Tunnel origin that reaches the InfraStack Traefik Gateway.
 
-Stop the Compose n8n service before restoring its database or enabling workflows
-in K3s so both instances do not process triggers simultaneously.
+Stop the Compose n8n service before restoring its database or enabling workflows in K3s so both instances do not process triggers simultaneously.
 
-The bootstrap verifies the Kubernetes rollout and the local Gateway route. Test
-the public HTTPS endpoint after DNS and Cloudflare are configured:
+The bootstrap verifies the Kubernetes rollout and the local Gateway route. Test the public HTTPS endpoint after DNS and Cloudflare are configured:
 
 ```bash
 curl -fsS https://n8n.example.net/healthz
