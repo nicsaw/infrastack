@@ -64,8 +64,8 @@
     - name: Validate n8n configuration
       ansible.builtin.assert:
         that:
-          - n8n_hostname | length > 0
-          - n8n_hostname is match('^[A-Za-z0-9.-]+$')
+          - n8n_hostname | length <= 253
+          - n8n_hostname is match('^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\\.(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?))*$')
           - n8n_encryption_key | length == 0 or n8n_encryption_key | length >= 32
           - n8n_timezone | length > 0
           - n8n_data_storage_size is match('^[1-9][0-9]*(Ki|Mi|Gi|Ti|Pi|Ei)$')
@@ -97,8 +97,8 @@
           - secret/n8n-secrets
           - --namespace=n8n
           - --output=json
+          - --ignore-not-found=true
       changed_when: false
-      failed_when: false
       register: n8n_secret
       no_log: true
 
@@ -111,11 +111,11 @@
         fail_msg: >-
           The existing n8n-secrets Secret is missing a required key.
           Back it up, delete it, and rerun bootstrap.
-      when: n8n_secret.rc == 0
+      when: n8n_secret.stdout | length > 0
       no_log: true
 
     - name: Create the n8n secret
-      when: n8n_secret.rc != 0
+      when: n8n_secret.stdout | length == 0
       block:
         - name: Generate the n8n encryption key
           ansible.builtin.command:
